@@ -1,4 +1,4 @@
-# ===== MAIN.PY CON ARCHIVO DE CONFIGURACIÓN =====
+# ===== MAIN.PY PARA AZURE =====
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config import get_settings
@@ -8,13 +8,14 @@ settings = get_settings()
 
 app = FastAPI(
     title="Mi API Redis",
-    description="API con configuración automática por entorno",
+    description="API con configuración para Azure Container Apps",
     debug=settings.debug
 )
 
 print(f"🚀 Ejecutando en entorno: {settings.environment}")
 print(f"🌐 URL externa: {settings.external_url}")
-print(f"🔗 Redis URL: {settings.redis_url}")
+print(f"🔗 Redis: {settings.redis_host}:{settings.redis_port}")
+print(f"🎯 CORS Origins: {settings.cors_origins}")
 
 # Configuración de CORS
 app.add_middleware(
@@ -36,9 +37,12 @@ def health_check():
         return {
             "status": "healthy",
             "environment": settings.environment,
-            "service_name": settings.service_name,
             "external_url": settings.external_url,
-            "redis_connected": redis_status
+            "redis": {
+                "host": settings.redis_host,
+                "port": settings.redis_port,
+                "connected": redis_status
+            }
         }
     except Exception as e:
         return {
@@ -53,9 +57,12 @@ def get_config():
     """Endpoint para ver la configuración actual"""
     return {
         "environment": settings.environment,
-        "service_name": settings.service_name,
         "external_url": settings.external_url,
         "cors_origins": settings.cors_origins,
+        "redis": {
+            "host": settings.redis_host,
+            "port": settings.redis_port
+        },
         "is_production": settings.is_production()
     }
 

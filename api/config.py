@@ -9,16 +9,9 @@ class Settings:
         self.debug: bool = self.environment == 'local'
         
         # === CONFIGURACIÓN REDIS ===
-        if self.environment == 'local':
-            # Local: usando Docker Compose
-            redis_host = os.getenv('REDIS_HOST', 'redis')
-            redis_port = os.getenv('REDIS_PORT', '6379')
-            self.redis_url = f"redis://{redis_host}:{redis_port}"
-        else:
-            # Producción: usando variable automática de Render
-            self.redis_url = os.getenv('REDIS_URL', '')
-            if not self.redis_url:
-                raise ValueError("REDIS_URL no configurada en producción")
+        self.redis_host = os.getenv('REDIS_HOST', 'redis' if self.environment == 'local' else 'localhost')
+        self.redis_port = int(os.getenv('REDIS_PORT', '6379'))
+        self.redis_url = f"redis://{self.redis_host}:{self.redis_port}"
         
         # === CONFIGURACIÓN CORS ===
         self.cors_origins = self._get_cors_origins()
@@ -27,9 +20,8 @@ class Settings:
         self.port = int(os.getenv('PORT', '8000'))
         self.host = '0.0.0.0'  # Para que funcione en contenedores
         
-        # === URLs Y DOMINIOS ===
-        self.service_name = os.getenv('RENDER_SERVICE_NAME', 'api')
-        self.external_url = os.getenv('RENDER_EXTERNAL_URL', f'http://localhost:{self.port}')
+        # === URL EXTERNA (opcional para logs/debug) ===
+        self.external_url = os.getenv('EXTERNAL_URL', f'http://localhost:{self.port}')
         
     def _get_cors_origins(self) -> List[str]:
         """Configuración de CORS según el entorno"""
@@ -40,25 +32,18 @@ class Settings:
                 "http://localhost:3000",
             ]
         else:
-            # En producción, Render puede pasar la URL del frontend como variable
-            frontend_url = os.getenv('FRONTEND_URL', '')
+            # En producción (Azure)
             origins = []
-            #origins = ["https://web-py62.onrender.com"]
             
+            # URL del frontend desde variable de entorno
+            frontend_url = os.getenv('FRONTEND_URL', '')
             if frontend_url:
                 origins.append(frontend_url)
 
-            # También permitir algunas URLs adicionales si las conoces
+            # URLs adicionales separadas por comas
             additional_origins = os.getenv('ADDITIONAL_CORS_ORIGINS', '')
             if additional_origins:
-                # Separar por comas si tienes múltiples URLs
                 origins.extend([url.strip() for url in additional_origins.split(',')])
-            
-            # También permitir el dominio base de tu proyecto
-            #origins.extend([
-             #   "https://web-py62.onrender.com",  # Patrón para servicios de Render
-                # Agrega aquí dominios específicos si los conoces
-            #])
             
             return origins
     
@@ -68,7 +53,7 @@ class Settings:
         try:
             return redis.from_url(self.redis_url, decode_responses=True)
         except Exception as e:
-            raise ConnectionError(f"Error conectando a Redis: {e}")
+            raise ConnectionError(f"Error conectando a Redis en {self.redis_host}:{self.redis_port} - {e}")
     
     def is_production(self) -> bool:
         return self.environment == 'production'

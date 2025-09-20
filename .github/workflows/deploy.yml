@@ -2,7 +2,7 @@ name: Deploy to Azure Container Instances
 
 on:
   push:
-    branches: [ dev]
+    branches: [ dev ]
   pull_request:
     branches: [ dev ]
 
@@ -57,6 +57,16 @@ jobs:
         docker build -t ${{ env.REGISTRY_NAME }}/web:latest ./web
         docker push ${{ env.REGISTRY_NAME }}/web:${{ github.sha }}
         docker push ${{ env.REGISTRY_NAME }}/web:latest
+
+    # Cleanup existing containers before deployment
+    - name: Delete existing containers
+      run: |
+        echo "Removing existing containers to avoid conflicts..."
+        az container delete --name redis --resource-group ${{ env.RESOURCE_GROUP }} --yes || true
+        az container delete --name api --resource-group ${{ env.RESOURCE_GROUP }} --yes || true
+        az container delete --name web --resource-group ${{ env.RESOURCE_GROUP }} --yes || true
+        echo "Waiting for containers to be fully deleted..."
+        sleep 30
 
     # Deploy Redis Container Instance
     - name: Deploy Redis Container Instance

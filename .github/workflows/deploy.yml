@@ -1,0 +1,114 @@
+name: Deploy to Azure Container Instances
+
+on:
+  push:
+    branches: [ dev]
+  pull_request:
+    branches: [ dev ]
+
+env:
+  REGISTRY_NAME: registryappdevops.azurecr.io
+  RESOURCE_GROUP: App-DevOps
+  REDIS_DNS: tuapp-redis-prod-2025
+  API_DNS: tuapp-api-prod-2025
+  WEB_DNS: tuapp-web-prod-2025
+  REGION: eastus2
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Login to Azure Container Registry
+      uses: azure/docker-login@v1
+      with:
+        login-server: ${{ env.REGISTRY_NAME }}
+        username: ${{ secrets.ACR_USERNAME }}
+        password: ${{ secrets.ACR_PASSWORD }}
+
+    # Build y push Redis
+    - name: Build and push Redis image
+      run: |
+        docker build -t ${{ env.REGISTRY_NAME }}/redis:${{ github.sha }} ./redis
+        docker build -t ${{ env.REGISTRY_NAME }}/redis:latest ./redis
+        docker push ${{ env.REGISTRY_NAME }}/redis:${{ github.sha }}
+        docker push ${{ env.REGISTRY_NAME }}/redis:latest
+
+    # Build y push API
+    - name: Build and push API image
+      run: |
+        docker build -t ${{ env.REGISTRY_NAME }}/api:${{ github.sha }} ./api
+        docker build -t ${{ env.REGISTRY_NAME }}/api:latest ./api
+        docker push ${{ env.REGISTRY_NAME }}/api:${{ github.sha }}
+        docker push ${{ env.REGISTRY_NAME }}/api:latest
+
+    # Build y push Web
+    - name: Build and push Web image
+      run: |
+        docker build -t ${{ env.REGISTRY_NAME }}/web:${{ github.sha }} ./web
+        docker build -t ${{ env.REGISTRY_NAME }}/web:latest ./web
+        docker push ${{ env.REGISTRY_NAME }}/web:${{ github.sha }}
+        docker push ${{ env.REGISTRY_NAME }}/web:latest
+
+    # Deploy Redis Container Instance
+    - name: Deploy Redis Container Instance
+      uses: azure/aci-deploy@v1
+      with:
+        resource-group: ${{ env.RESOURCE_GROUP }}
+        dns-name-label: ${{ env.REDIS_DNS }}
+        image: ${{ env.REGISTRY_NAME }}/redis:latest
+        registry-login-server: ${{ env.REGISTRY_NAME }}
+        registry-username: ${{ secrets.ACR_USERNAME }}
+        registry-password: ${{ secrets.ACR_PASSWORD }}
+        name: redis
+        location: ${{ env.REGION }}
+        environment-variables: |
+          REDIS_MAXMEMORY=256mb
+        ports: 6379
+        cpu: 1
+        memory: 1
+
+    # Deploy API Container Instance
+    - name: Deploy API Container Instance
+      uses: azure/aci-deploy@v1
+      with:
+        resource-group: ${{ env.RESOURCE_GROUP }}
+        dns-name-label: ${{ env.API_DNS }}
+        image: ${{ env.REGISTRY_NAME }}/api:latest
+        registry-login-server: ${{ env.REGISTRY_NAME }}
+        registry-username: ${{ secrets.ACR_USERNAME }}
+        registry-password: ${{ secrets.ACR_PASSWORD }}
+        name: api
+        location: ${{ env.REGION }}
+        environment-variables: |
+          ENVIRONMENT=production
+          REDIS_HOST=${{ env.REDIS_DNS }}.${{ env.REGION }}.azurecontainer.io
+          REDIS_PORT=6379
+          FRONTEND_URL=http://${{ env.WEB_DNS }}.${{ env.REGION }}.azurecontainer.io
+        ports: 8000
+        cpu: 1
+        memory: 1.5
+
+    # Deploy Web Container Instance
+    - name: Deploy Web Container Instance
+      uses: azure/aci-deploy@v1
+      with:
+        resource-group: ${{ env.RESOURCE_GROUP }}
+        dns-name-label: ${{ env.WEB_DNS }}
+        image: ${{ env.REGISTRY_NAME }}/web:latest
+        registry-login-server: ${{ env.REGISTRY_NAME }}
+        registry-username: ${{ secrets.ACR_USERNAME }}
+        registry-password: ${{ secrets.ACR_PASSWORD }}
+        name: web
+        location: ${{ env.REGION }}
+        ports: 80
+        cpu: 1
+        memory: 1

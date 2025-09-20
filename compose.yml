@@ -3,6 +3,8 @@ services:
   redis:
     image: redis:alpine
     container_name: redis
+    env_file:
+      - .env  
     
   api:
     build: ./api
@@ -12,17 +14,10 @@ services:
     depends_on:
       - redis
     env_file:
-      - .env  # Carga las variables del archivo .env
-    # O puedes especificar directamente:
-    # environment:
-    #   - ENVIRONMENT=local
-    #   - REDIS_HOST=redis
-    #   - REDIS_PORT=6379
+      - .env  
     
   web:
-    image: nginx:alpine
+    build: ./web
     container_name: web
     ports:
       - "8080:80"
-    volumes:
-      - ./web:/usr/share/nginx/html

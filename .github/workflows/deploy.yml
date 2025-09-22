@@ -120,7 +120,7 @@ jobs:
         name: web
         location: ${{ env.REGION }}
         environment-variables: |
-          API_URL=http://${{ env.API_DNS }}.${{ env.REGION }}.azurecontainer.io:8000
+          API_URL=http://${{ env.API_DNS }}.${{ env.REGION }}.azurecontainer.io
         ports: 80
         cpu: 1
         memory: 1

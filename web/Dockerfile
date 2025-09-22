@@ -14,7 +14,8 @@ RUN rm -rf ./*
 COPY . .
 
 # Script de arranque: reemplaza la variable API_URL en config.js y levanta Nginx
-CMD envsubst < config.js > config.js && \
+CMD envsubst '$API_URL' < config.js > temp_config.js && \
+    mv temp_config.js config.js && \
     exec nginx -g "daemon off;"
 
 # Exponemos el puerto 80 (Azure lo redirige automáticamente)

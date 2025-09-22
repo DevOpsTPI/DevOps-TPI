@@ -21,8 +21,8 @@ EXPOSE 80
 #  nginx -g 'daemon off;'
 
 # Instalamos envsubst (parte del paquete gettext)
-#RUN apk add --no-cache gettext
+RUN apk add --no-cache gettext
 
 # Script de arranque: reemplaza la variable API_URL en config.js y levanta Nginx
-#CMD envsubst < config.js.template > config.js && \
-#    exec nginx -g "daemon off;"
+CMD envsubst < config.js.template > config.js && \
+    exec nginx -g "daemon off;"

@@ -21,3 +21,5 @@ services:
     container_name: web
     ports:
       - "8080:80"
+    environment:
+    - API_URL=${API_URL}

@@ -119,6 +119,8 @@ jobs:
         registry-password: ${{ secrets.ACR_PASSWORD }}
         name: web
         location: ${{ env.REGION }}
+        environment-variables: |
+          API_URL=http://${{ env.API_DNS }}.${{ env.REGION }}.azurecontainer.io:8000
         ports: 80
         cpu: 1
         memory: 1

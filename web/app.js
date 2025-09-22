@@ -1,7 +1,9 @@
 // ===== APP.JS CON DETECCIÓN AUTOMÁTICA =====
 
 // Configuración automática de la API
+/*
 async function getApiBaseUrl() {
+    
     const hostname = window.location.hostname;
     const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
     
@@ -38,10 +40,16 @@ async function getApiBaseUrl() {
 }
 
 let API_BASE_URL;
+*/
+const API_BASE_URL = window.ENV.API_URL;
+
+if (!API_BASE_URL) {
+    console.error("❌ No se definió API_URL en config.js");
+}
 
 // Inicializar configuración
 async function initializeApp() {
-    API_BASE_URL = await getApiBaseUrl();
+    //API_BASE_URL = await getApiBaseUrl();
     console.log(`🌐 API Base URL: ${API_BASE_URL}`);
     
     // Verificar conexión

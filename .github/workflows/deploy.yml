@@ -2,9 +2,9 @@ name: Deploy to Azure Container Instances
 
 on:
   push:
-    branches: [ dev ]
+    branches: [ main ]
   pull_request:
-    branches: [ dev ]
+    branches: [ main ]
 
 env:
   REGISTRY_NAME: registryappdevops.azurecr.io
@@ -26,7 +26,7 @@ jobs:
         uses: SonarSource/sonarqube-scan-action@v6
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          
+
   build-and-deploy:
     runs-on: ubuntu-latest
     

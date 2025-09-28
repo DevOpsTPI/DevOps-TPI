@@ -4,5 +4,6 @@ __pycache__/
 *.pyo
 .DS_Store
 
-#Ignore vscode AI rules
-.github\instructions\codacy.instructions.md
+com-redis.txt
+
+

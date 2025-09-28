@@ -1,19 +1,17 @@
-# ===== MAIN.PY PARA AZURE =====
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from config import get_settings
 
-# Cargar configuración
 settings = get_settings()
 
 app = FastAPI(
-    title="Mi API Redis",
-    description="API con configuración para Azure Container Apps",
+    title="API",
+    description="API con FastAPI y Redis",
     debug=settings.debug
 )
 
 print(f"🚀 Ejecutando en entorno: {settings.environment}")
-print(f"🌐 URL externa: {settings.external_url}")
+print(f"🌐 API URL: {settings.external_url}")
 print(f"🔗 Redis: {settings.redis_host}:{settings.redis_port}")
 print(f"🎯 CORS Origins: {settings.cors_origins}")
 
@@ -26,22 +24,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Inicializar cliente Redis usando la configuración
 r = settings.get_redis_client()
 
-# Endpoint de salud
+# Endpoints
 @app.get("/health")
 def health_check():
     try:
         redis_status = r.ping()
         return {
-            "status": "healthy",
-            "environment": settings.environment,
-            "external_url": settings.external_url,
-            "redis": {
-                "host": settings.redis_host,
-                "port": settings.redis_port,
-                "connected": redis_status
+        "status": "healthy" if r.ping() else "unhealthy",
+        "environment": settings.environment,
+        "api_url": settings.external_url,
+        "redis": {
+            "host": settings.redis_host,
+            "port": settings.redis_port,
             }
         }
     except Exception as e:
@@ -51,7 +47,6 @@ def health_check():
             "redis_error": str(e)
         }
 
-# Endpoint para obtener configuración (útil para debug)
 @app.get("/config")
 def get_config():
     """Endpoint para ver la configuración actual"""

@@ -63,8 +63,7 @@ def get_config():
         "redis": {
             "host": settings.redis_host,
             "port": settings.redis_port
-        },
-        "is_production": settings.is_production()
+        }
     }
 
 # To do app api

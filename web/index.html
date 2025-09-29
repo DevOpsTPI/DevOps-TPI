@@ -1,40 +1,23 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>App Web con Redis</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>To-Do App</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Diccionario</h1>
-    <button onclick="openSetModal()">Ingresar un valor</button>
-    <button onclick="openGetModal()">Obtener un valor</button>
-
-    <!-- Modal Ingresar -->
-    <div id="setModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('setModal')">&times;</span>
-            <h2>Ingresar clave y valor</h2>
-            <input type="text" id="setKey" placeholder="Clave">
-            <input type="text" id="setValue" placeholder="Valor">
-            <button onclick="setValue()">Guardar</button>
-        </div>
+  <div class="container">
+    <h1>To-Do</h1>
+    <div class="task-input">
+      <input id="taskInput" placeholder="Nueva tarea">
+      <button class="add-btn" onclick="addTask()">Agregar</button>
     </div>
+    <ul id="taskList"></ul>
+  </div>
 
-    <!-- Modal Obtener -->
-    <div id="getModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal('getModal')">&times;</span>
-            <h2>Buscar clave</h2>
-            <input type="text" id="getKey" placeholder="Clave">
-            <button onclick="getValue()">Buscar</button>
-        </div>
-    </div>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
 
-    <!-- Caja de mensajes -->
-    <div id="messageBox" class="message-box"></div>
-    
-    <script src="config.js"></script>
-    <script src="app.js"></script>
 </body>
 </html>

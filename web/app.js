@@ -4,24 +4,14 @@ if (!API_BASE_URL) {
     console.error("❌ No se definió API_URL en config.js");
 }
 
-// Inicializar configuración
 async function initializeApp() {
     console.log(`🌐 API Base URL: ${API_BASE_URL}`);
     
     // Verificar conexión
     await checkApiHealth();
-}
 
-function openSetModal() {
-    document.getElementById("setModal").style.display = "block";
-}
-
-function openGetModal() {
-    document.getElementById("getModal").style.display = "block";
-}
-
-function closeModal(id) {
-    document.getElementById(id).style.display = "none";
+    // Cargar tareas
+    fetchTasks();
 }
 
 function showMessage(message) {
@@ -30,66 +20,67 @@ function showMessage(message) {
     box.style.display = "block";
 }
 
-async function setValue() {
-    const key = document.getElementById("setKey").value;
-    const value = document.getElementById("setValue").value;
-
-    if (!key || !value) {
-        showMessage("Debes ingresar una clave y un valor.");
-        return;
-    }
-
+// ===== FUNCIONES DE TAREAS =====
+async function fetchTasks() {
     try {
-        const response = await fetch(`${API_BASE_URL}/set/${key}/${value}`, {
-            method: 'POST'
+        const res = await fetch(`${API_BASE_URL}/tasks`);
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const tasks = await res.json();
+        const list = document.getElementById("taskList");
+        list.innerHTML = "";
+        tasks.forEach(task => {
+            const li = document.createElement("li");
+            li.className = "task-card";
+            li.innerHTML = `
+                <button class="task-btn" onclick="toggleTask('${task.id}', ${task.completed})">
+                  <i class="bi ${task.completed ? 'bi-check-circle-fill' : 'bi-circle'}"></i>
+                </button>
+                <span class="task-text ${task.completed ? 'done' : ''}">${task.text}</span>
+                <button class="task-btn" onclick="deleteTask('${task.id}')">
+                  <i class="bi bi-x"></i>
+                </button>
+            `;
+            list.appendChild(li);
         });
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.error) {
-            showMessage(`Error: ${data.error}`);
-        } else {
-            showMessage("¡Clave guardada!");
-        }
     } catch (error) {
-        showMessage(`Error de conexión: ${error.message}`);
+        showMessage(`Error cargando tareas: ${error.message}`);
     }
-    
-    closeModal("setModal");
 }
 
-async function getValue() {
-    const key = document.getElementById("getKey").value;
-
-    if (!key) {
-        showMessage("Debes ingresar una clave.");
-        return;
-    }
-
+async function addTask() {
+    const input = document.getElementById("taskInput");
+    const text = input.value.trim();
+    if (!text) return;
     try {
-        const response = await fetch(`${API_BASE_URL}/get/${key}`);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.error) {
-            showMessage(`Error: ${data.error}`);
-        } else {
-            const value = data.value !== null ? data.value : "No encontrado";
-            showMessage(`Valor para clave "${key}": ${value}`);
-        }
+        await fetch(`${API_BASE_URL}/tasks?text=${encodeURIComponent(text)}`, { method: "POST" });
+        input.value = "";
+        fetchTasks();
     } catch (error) {
-        showMessage(`Error de conexión: ${error.message}`);
+        showMessage(`Error agregando tarea: ${error.message}`);
     }
-    
-    closeModal("getModal");
+}
+
+async function toggleTask(id, completed) {
+    console.log("toggleTask:", id, completed);
+    try {
+        if (completed) {
+            await fetch(`${API_BASE_URL}/tasks/${id}/incomplete`, { method: "POST" });
+        } else {
+            await fetch(`${API_BASE_URL}/tasks/${id}/complete`, { method: "POST" });
+        }
+        fetchTasks();
+    } catch (error) {
+        showMessage(`Error cambiando estado: ${error.message}`);
+    }
+}
+
+async function deleteTask(id) {
+    try {
+        await fetch(`${API_BASE_URL}/tasks/${id}`, { method: "DELETE" });
+        fetchTasks();
+    } catch (error) {
+        showMessage(`Error eliminando tarea: ${error.message}`);
+    }
 }
 
 // Verificar estado de la API
@@ -99,7 +90,6 @@ async function checkApiHealth() {
         const data = await response.json();
         console.log('🏥 Estado de la API:', data);
         
-        // Mostrar información en consola para debug
         if (data.status === 'healthy') {
             console.log(`✅ API conectada - Entorno: ${data.environment}`);
         } else {
@@ -108,12 +98,6 @@ async function checkApiHealth() {
     } catch (error) {
         console.error('❌ Error verificando API:', error);
         showMessage('No se puede conectar con la API');
-    }
-}
-
-window.onclick = function(event) {
-    if (event.target.classList.contains("modal")) {
-        event.target.style.display = "none";
     }
 }
 

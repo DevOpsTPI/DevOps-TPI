@@ -14,7 +14,7 @@ class Settings:
         self.host: str = os.getenv("HOST", "0.0.0.0")  # default contenedores
 
         self.external_url: str = os.getenv("API_URL", f"http://localhost:{self.port}")
-        self.frontend_url: str = os.getenv("FRONTEND_URL", "http://localhost")
+        self.frontend_url: str = os.getenv("FRONTEND_URL", "http://localhost:8080")
 
         self.cors_origins: List[str] = self._get_cors_origins()
 

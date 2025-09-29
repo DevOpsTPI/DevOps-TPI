@@ -10,7 +10,7 @@ async function initializeApp() {
     // Verificar conexión
     await checkApiHealth();
 
-    // Cargar tareas
+    //Cargar tareas
     fetchTasks();
 }
 

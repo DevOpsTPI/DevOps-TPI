@@ -1,4 +1,4 @@
-const API_BASE_URL = window.ENV.API_URL;
+const API_BASE_URL = "http://api:8000";
 
 if (!API_BASE_URL) {
     console.error("❌ No se definió API_URL en config.js");

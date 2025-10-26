@@ -22,6 +22,8 @@ class Settings:
         origins = []
         if self.frontend_url:
             origins.append(self.frontend_url)
+        else:
+            origins.append("http://localhost:8080")
 
         additional = os.getenv("ADDITIONAL_CORS_ORIGINS", "")
         if additional:

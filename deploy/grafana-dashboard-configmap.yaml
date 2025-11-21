@@ -1,0 +1,279 @@
+apiVersion: v1
+data:
+  todo-app-dashboard.json: "{\r\n  \"annotations\": {\r\n    \"list\": [\r\n      {\r\n
+    \       \"builtIn\": 1,\r\n        \"datasource\": \"-- Grafana --\",\r\n        \"enable\":
+    true,\r\n        \"hide\": true,\r\n        \"iconColor\": \"rgba(0, 211, 255,
+    1)\",\r\n        \"name\": \"Annotations & Alerts\",\r\n        \"type\": \"dashboard\"\r\n
+    \     }\r\n    ]\r\n  },\r\n  \"editable\": true,\r\n  \"gnetId\": null,\r\n  \"graphTooltip\":
+    0,\r\n  \"id\": null,\r\n  \"links\": [],\r\n  \"panels\": [\r\n    {\r\n      \"datasource\":
+    \"Prometheus\",\r\n      \"fieldConfig\": {\r\n        \"defaults\": {\r\n          \"color\":
+    {\r\n            \"mode\": \"palette-classic\"\r\n          },\r\n          \"custom\":
+    {\r\n            \"axisLabel\": \"\",\r\n            \"axisPlacement\": \"auto\",\r\n
+    \           \"barAlignment\": 0,\r\n            \"drawStyle\": \"line\",\r\n            \"fillOpacity\":
+    10,\r\n            \"gradientMode\": \"none\",\r\n            \"hideFrom\": {\r\n
+    \             \"tooltip\": false,\r\n              \"viz\": false,\r\n              \"legend\":
+    false\r\n            },\r\n            \"lineInterpolation\": \"linear\",\r\n
+    \           \"lineWidth\": 1,\r\n            \"pointSize\": 5,\r\n            \"scaleDistribution\":
+    {\r\n              \"type\": \"linear\"\r\n            },\r\n            \"showPoints\":
+    \"never\",\r\n            \"spanNulls\": true\r\n          },\r\n          \"mappings\":
+    [],\r\n          \"thresholds\": {\r\n            \"mode\": \"absolute\",\r\n
+    \           \"steps\": [\r\n              {\r\n                \"color\": \"green\",\r\n
+    \               \"value\": null\r\n              }\r\n            ]\r\n          },\r\n
+    \         \"unit\": \"reqps\"\r\n        },\r\n        \"overrides\": []\r\n      },\r\n
+    \     \"gridPos\": {\r\n        \"h\": 8,\r\n        \"w\": 12,\r\n        \"x\":
+    0,\r\n        \"y\": 0\r\n      },\r\n      \"id\": 2,\r\n      \"options\": {\r\n
+    \       \"legend\": {\r\n          \"calcs\": [\"mean\", \"lastNotNull\"],\r\n
+    \         \"displayMode\": \"table\",\r\n          \"placement\": \"bottom\"\r\n
+    \       },\r\n        \"tooltip\": {\r\n          \"mode\": \"single\"\r\n        }\r\n
+    \     },\r\n      \"targets\": [\r\n        {\r\n          \"expr\": \"rate(http_requests_total{job=\\\"api\\\"}[1m])\",\r\n
+    \         \"legendFormat\": \"{{method}} {{endpoint}} - {{status}}\",\r\n          \"refId\":
+    \"A\"\r\n        }\r\n      ],\r\n      \"title\": \"Peticiones HTTP por segundo
+    (API)\",\r\n      \"type\": \"timeseries\"\r\n    },\r\n    {\r\n      \"datasource\":
+    \"Prometheus\",\r\n      \"fieldConfig\": {\r\n        \"defaults\": {\r\n          \"color\":
+    {\r\n            \"mode\": \"thresholds\"\r\n          },\r\n          \"mappings\":
+    [],\r\n          \"thresholds\": {\r\n            \"mode\": \"absolute\",\r\n
+    \           \"steps\": [\r\n              {\r\n                \"color\": \"green\",\r\n
+    \               \"value\": null\r\n              },\r\n              {\r\n                \"color\":
+    \"yellow\",\r\n                \"value\": 1000\r\n              },\r\n              {\r\n
+    \               \"color\": \"red\",\r\n                \"value\": 5000\r\n              }\r\n
+    \           ]\r\n          },\r\n          \"unit\": \"short\"\r\n        },\r\n
+    \       \"overrides\": []\r\n      },\r\n      \"gridPos\": {\r\n        \"h\":
+    8,\r\n        \"w\": 12,\r\n        \"x\": 12,\r\n        \"y\": 0\r\n      },\r\n
+    \     \"id\": 4,\r\n      \"options\": {\r\n        \"orientation\": \"auto\",\r\n
+    \       \"reduceOptions\": {\r\n          \"values\": false,\r\n          \"calcs\":
+    [\"lastNotNull\"],\r\n          \"fields\": \"\"\r\n        },\r\n        \"showThresholdLabels\":
+    false,\r\n        \"showThresholdMarkers\": true,\r\n        \"text\": {}\r\n
+    \     },\r\n      \"pluginVersion\": \"8.0.0\",\r\n      \"targets\": [\r\n        {\r\n
+    \         \"expr\": \"sum(http_requests_total{job=\\\"api\\\"})\",\r\n          \"refId\":
+    \"A\"\r\n        }\r\n      ],\r\n      \"title\": \"Total de Peticiones HTTP
+    (API)\",\r\n      \"type\": \"gauge\"\r\n    },\r\n    {\r\n      \"datasource\":
+    \"Prometheus\",\r\n      \"fieldConfig\": {\r\n        \"defaults\": {\r\n          \"color\":
+    {\r\n            \"mode\": \"palette-classic\"\r\n          },\r\n          \"custom\":
+    {\r\n            \"axisLabel\": \"\",\r\n            \"axisPlacement\": \"auto\",\r\n
+    \           \"barAlignment\": 0,\r\n            \"drawStyle\": \"line\",\r\n            \"fillOpacity\":
+    10,\r\n            \"gradientMode\": \"none\",\r\n            \"hideFrom\": {\r\n
+    \             \"tooltip\": false,\r\n              \"viz\": false,\r\n              \"legend\":
+    false\r\n            },\r\n            \"lineInterpolation\": \"linear\",\r\n
+    \           \"lineWidth\": 1,\r\n            \"pointSize\": 5,\r\n            \"scaleDistribution\":
+    {\r\n              \"type\": \"linear\"\r\n            },\r\n            \"showPoints\":
+    \"never\",\r\n            \"spanNulls\": true\r\n          },\r\n          \"mappings\":
+    [],\r\n          \"thresholds\": {\r\n            \"mode\": \"absolute\",\r\n
+    \           \"steps\": [\r\n              {\r\n                \"color\": \"green\",\r\n
+    \               \"value\": null\r\n              }\r\n            ]\r\n          },\r\n
+    \         \"unit\": \"s\"\r\n        },\r\n        \"overrides\": []\r\n      },\r\n
+    \     \"gridPos\": {\r\n        \"h\": 8,\r\n        \"w\": 12,\r\n        \"x\":
+    0,\r\n        \"y\": 8\r\n      },\r\n      \"id\": 6,\r\n      \"options\": {\r\n
+    \       \"legend\": {\r\n          \"calcs\": [\"mean\", \"max\"],\r\n          \"displayMode\":
+    \"table\",\r\n          \"placement\": \"bottom\"\r\n        },\r\n        \"tooltip\":
+    {\r\n          \"mode\": \"single\"\r\n        }\r\n      },\r\n      \"targets\":
+    [\r\n        {\r\n          \"expr\": \"histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{job=\\\"api\\\"}[5m]))\",\r\n
+    \         \"legendFormat\": \"p95 - {{method}} {{endpoint}}\",\r\n          \"refId\":
+    \"A\"\r\n        },\r\n        {\r\n          \"expr\": \"histogram_quantile(0.50,
+    rate(http_request_duration_seconds_bucket{job=\\\"api\\\"}[5m]))\",\r\n          \"legendFormat\":
+    \"p50 - {{method}} {{endpoint}}\",\r\n          \"refId\": \"B\"\r\n        }\r\n
+    \     ],\r\n      \"title\": \"Latencia de Peticiones (p50, p95)\",\r\n      \"type\":
+    \"timeseries\"\r\n    },\r\n    {\r\n      \"datasource\": \"Prometheus\",\r\n
+    \     \"fieldConfig\": {\r\n        \"defaults\": {\r\n          \"color\": {\r\n
+    \           \"mode\": \"palette-classic\"\r\n          },\r\n          \"custom\":
+    {\r\n            \"axisLabel\": \"\",\r\n            \"axisPlacement\": \"auto\",\r\n
+    \           \"barAlignment\": 0,\r\n            \"drawStyle\": \"line\",\r\n            \"fillOpacity\":
+    10,\r\n            \"gradientMode\": \"none\",\r\n            \"hideFrom\": {\r\n
+    \             \"tooltip\": false,\r\n              \"viz\": false,\r\n              \"legend\":
+    false\r\n            },\r\n            \"lineInterpolation\": \"linear\",\r\n
+    \           \"lineWidth\": 1,\r\n            \"pointSize\": 5,\r\n            \"scaleDistribution\":
+    {\r\n              \"type\": \"linear\"\r\n            },\r\n            \"showPoints\":
+    \"never\",\r\n            \"spanNulls\": true\r\n          },\r\n          \"mappings\":
+    [],\r\n          \"thresholds\": {\r\n            \"mode\": \"absolute\",\r\n
+    \           \"steps\": [\r\n              {\r\n                \"color\": \"green\",\r\n
+    \               \"value\": null\r\n              }\r\n            ]\r\n          },\r\n
+    \         \"unit\": \"short\"\r\n        },\r\n        \"overrides\": []\r\n      },\r\n
+    \     \"gridPos\": {\r\n        \"h\": 8,\r\n        \"w\": 12,\r\n        \"x\":
+    12,\r\n        \"y\": 8\r\n      },\r\n      \"id\": 8,\r\n      \"options\":
+    {\r\n        \"legend\": {\r\n          \"calcs\": [\"lastNotNull\"],\r\n          \"displayMode\":
+    \"list\",\r\n          \"placement\": \"bottom\"\r\n        },\r\n        \"tooltip\":
+    {\r\n          \"mode\": \"single\"\r\n        }\r\n      },\r\n      \"targets\":
+    [\r\n        {\r\n          \"expr\": \"tasks_current\",\r\n          \"legendFormat\":
+    \"Total de Tareas\",\r\n          \"refId\": \"A\"\r\n        },\r\n        {\r\n
+    \         \"expr\": \"tasks_pending\",\r\n          \"legendFormat\": \"Tareas
+    Pendientes\",\r\n          \"refId\": \"B\"\r\n        }\r\n      ],\r\n      \"title\":
+    \"Estado de Tareas\",\r\n      \"type\": \"timeseries\"\r\n    },\r\n    {\r\n
+    \     \"datasource\": \"Prometheus\",\r\n      \"fieldConfig\": {\r\n        \"defaults\":
+    {\r\n          \"color\": {\r\n            \"mode\": \"thresholds\"\r\n          },\r\n
+    \         \"mappings\": [],\r\n          \"thresholds\": {\r\n            \"mode\":
+    \"absolute\",\r\n            \"steps\": [\r\n              {\r\n                \"color\":
+    \"green\",\r\n                \"value\": null\r\n              }\r\n            ]\r\n
+    \         },\r\n          \"unit\": \"short\"\r\n        },\r\n        \"overrides\":
+    []\r\n      },\r\n      \"gridPos\": {\r\n        \"h\": 4,\r\n        \"w\":
+    6,\r\n        \"x\": 0,\r\n        \"y\": 16\r\n      },\r\n      \"id\": 10,\r\n
+    \     \"options\": {\r\n        \"colorMode\": \"value\",\r\n        \"graphMode\":
+    \"area\",\r\n        \"justifyMode\": \"auto\",\r\n        \"orientation\": \"auto\",\r\n
+    \       \"reduceOptions\": {\r\n          \"values\": false,\r\n          \"calcs\":
+    [\"lastNotNull\"],\r\n          \"fields\": \"\"\r\n        },\r\n        \"text\":
+    {},\r\n        \"textMode\": \"auto\"\r\n      },\r\n      \"pluginVersion\":
+    \"8.0.0\",\r\n      \"targets\": [\r\n        {\r\n          \"expr\": \"tasks_created_total\",\r\n
+    \         \"refId\": \"A\"\r\n        }\r\n      ],\r\n      \"title\": \"Tareas
+    Creadas\",\r\n      \"type\": \"stat\"\r\n    },\r\n    {\r\n      \"datasource\":
+    \"Prometheus\",\r\n      \"fieldConfig\": {\r\n        \"defaults\": {\r\n          \"color\":
+    {\r\n            \"mode\": \"thresholds\"\r\n          },\r\n          \"mappings\":
+    [],\r\n          \"thresholds\": {\r\n            \"mode\": \"absolute\",\r\n
+    \           \"steps\": [\r\n              {\r\n                \"color\": \"green\",\r\n
+    \               \"value\": null\r\n              }\r\n            ]\r\n          },\r\n
+    \         \"unit\": \"short\"\r\n        },\r\n        \"overrides\": []\r\n      },\r\n
+    \     \"gridPos\": {\r\n        \"h\": 4,\r\n        \"w\": 6,\r\n        \"x\":
+    6,\r\n        \"y\": 16\r\n      },\r\n      \"id\": 12,\r\n      \"options\":
+    {\r\n        \"colorMode\": \"value\",\r\n        \"graphMode\": \"area\",\r\n
+    \       \"justifyMode\": \"auto\",\r\n        \"orientation\": \"auto\",\r\n        \"reduceOptions\":
+    {\r\n          \"values\": false,\r\n          \"calcs\": [\"lastNotNull\"],\r\n
+    \         \"fields\": \"\"\r\n        },\r\n        \"text\": {},\r\n        \"textMode\":
+    \"auto\"\r\n      },\r\n      \"pluginVersion\": \"8.0.0\",\r\n      \"targets\":
+    [\r\n        {\r\n          \"expr\": \"tasks_completed_total\",\r\n          \"refId\":
+    \"A\"\r\n        }\r\n      ],\r\n      \"title\": \"Tareas Completadas\",\r\n
+    \     \"type\": \"stat\"\r\n    },\r\n    {\r\n      \"datasource\": \"Prometheus\",\r\n
+    \     \"fieldConfig\": {\r\n        \"defaults\": {\r\n          \"color\": {\r\n
+    \           \"mode\": \"thresholds\"\r\n          },\r\n          \"mappings\":
+    [],\r\n          \"thresholds\": {\r\n            \"mode\": \"absolute\",\r\n
+    \           \"steps\": [\r\n              {\r\n                \"color\": \"green\",\r\n
+    \               \"value\": null\r\n              }\r\n            ]\r\n          },\r\n
+    \         \"unit\": \"short\"\r\n        },\r\n        \"overrides\": []\r\n      },\r\n
+    \     \"gridPos\": {\r\n        \"h\": 4,\r\n        \"w\": 6,\r\n        \"x\":
+    12,\r\n        \"y\": 16\r\n      },\r\n      \"id\": 14,\r\n      \"options\":
+    {\r\n        \"colorMode\": \"value\",\r\n        \"graphMode\": \"area\",\r\n
+    \       \"justifyMode\": \"auto\",\r\n        \"orientation\": \"auto\",\r\n        \"reduceOptions\":
+    {\r\n          \"values\": false,\r\n          \"calcs\": [\"lastNotNull\"],\r\n
+    \         \"fields\": \"\"\r\n        },\r\n        \"text\": {},\r\n        \"textMode\":
+    \"auto\"\r\n      },\r\n      \"pluginVersion\": \"8.0.0\",\r\n      \"targets\":
+    [\r\n        {\r\n          \"expr\": \"tasks_deleted_total\",\r\n          \"refId\":
+    \"A\"\r\n        }\r\n      ],\r\n      \"title\": \"Tareas Eliminadas\",\r\n
+    \     \"type\": \"stat\"\r\n    },\r\n    {\r\n      \"datasource\": \"Prometheus\",\r\n
+    \     \"fieldConfig\": {\r\n        \"defaults\": {\r\n          \"color\": {\r\n
+    \           \"mode\": \"palette-classic\"\r\n          },\r\n          \"custom\":
+    {\r\n            \"axisLabel\": \"\",\r\n            \"axisPlacement\": \"auto\",\r\n
+    \           \"barAlignment\": 0,\r\n            \"drawStyle\": \"line\",\r\n            \"fillOpacity\":
+    10,\r\n            \"gradientMode\": \"none\",\r\n            \"hideFrom\": {\r\n
+    \             \"tooltip\": false,\r\n              \"viz\": false,\r\n              \"legend\":
+    false\r\n            },\r\n            \"lineInterpolation\": \"linear\",\r\n
+    \           \"lineWidth\": 1,\r\n            \"pointSize\": 5,\r\n            \"scaleDistribution\":
+    {\r\n              \"type\": \"linear\"\r\n            },\r\n            \"showPoints\":
+    \"never\",\r\n            \"spanNulls\": true\r\n          },\r\n          \"mappings\":
+    [],\r\n          \"thresholds\": {\r\n            \"mode\": \"absolute\",\r\n
+    \           \"steps\": [\r\n              {\r\n                \"color\": \"green\",\r\n
+    \               \"value\": null\r\n              }\r\n            ]\r\n          },\r\n
+    \         \"unit\": \"percent\"\r\n        },\r\n        \"overrides\": []\r\n
+    \     },\r\n      \"gridPos\": {\r\n        \"h\": 8,\r\n        \"w\": 12,\r\n
+    \       \"x\": 0,\r\n        \"y\": 20\r\n      },\r\n      \"id\": 16,\r\n      \"options\":
+    {\r\n        \"legend\": {\r\n          \"calcs\": [\"mean\", \"lastNotNull\"],\r\n
+    \         \"displayMode\": \"table\",\r\n          \"placement\": \"bottom\"\r\n
+    \       },\r\n        \"tooltip\": {\r\n          \"mode\": \"single\"\r\n        }\r\n
+    \     },\r\n      \"targets\": [\r\n        {\r\n          \"expr\": \"100 * (1
+    - avg(rate(container_cpu_usage_seconds_total{name=~\\\"fastapi|web|redis\\\"}[5m]))
+    by (name))\",\r\n          \"legendFormat\": \"CPU Idle - {{name}}\",\r\n          \"refId\":
+    \"A\"\r\n        }\r\n      ],\r\n      \"title\": \"Uso de CPU por Contenedor
+    (%)\",\r\n      \"type\": \"timeseries\"\r\n    },\r\n    {\r\n      \"datasource\":
+    \"Prometheus\",\r\n      \"fieldConfig\": {\r\n        \"defaults\": {\r\n          \"color\":
+    {\r\n            \"mode\": \"palette-classic\"\r\n          },\r\n          \"custom\":
+    {\r\n            \"axisLabel\": \"\",\r\n            \"axisPlacement\": \"auto\",\r\n
+    \           \"barAlignment\": 0,\r\n            \"drawStyle\": \"line\",\r\n            \"fillOpacity\":
+    10,\r\n            \"gradientMode\": \"none\",\r\n            \"hideFrom\": {\r\n
+    \             \"tooltip\": false,\r\n              \"viz\": false,\r\n              \"legend\":
+    false\r\n            },\r\n            \"lineInterpolation\": \"linear\",\r\n
+    \           \"lineWidth\": 1,\r\n            \"pointSize\": 5,\r\n            \"scaleDistribution\":
+    {\r\n              \"type\": \"linear\"\r\n            },\r\n            \"showPoints\":
+    \"never\",\r\n            \"spanNulls\": true\r\n          },\r\n          \"mappings\":
+    [],\r\n          \"thresholds\": {\r\n            \"mode\": \"absolute\",\r\n
+    \           \"steps\": [\r\n              {\r\n                \"color\": \"green\",\r\n
+    \               \"value\": null\r\n              }\r\n            ]\r\n          },\r\n
+    \         \"unit\": \"bytes\"\r\n        },\r\n        \"overrides\": []\r\n      },\r\n
+    \     \"gridPos\": {\r\n        \"h\": 8,\r\n        \"w\": 12,\r\n        \"x\":
+    12,\r\n        \"y\": 20\r\n      },\r\n      \"id\": 18,\r\n      \"options\":
+    {\r\n        \"legend\": {\r\n          \"calcs\": [\"mean\", \"lastNotNull\"],\r\n
+    \         \"displayMode\": \"table\",\r\n          \"placement\": \"bottom\"\r\n
+    \       },\r\n        \"tooltip\": {\r\n          \"mode\": \"single\"\r\n        }\r\n
+    \     },\r\n      \"targets\": [\r\n        {\r\n          \"expr\": \"container_memory_usage_bytes{name=~\\\"fastapi|web|redis\\\"}\",\r\n
+    \         \"legendFormat\": \"Memoria - {{name}}\",\r\n          \"refId\": \"A\"\r\n
+    \       }\r\n      ],\r\n      \"title\": \"Uso de Memoria por Contenedor\",\r\n
+    \     \"type\": \"timeseries\"\r\n    },\r\n    {\r\n      \"datasource\": \"Prometheus\",\r\n
+    \     \"fieldConfig\": {\r\n        \"defaults\": {\r\n          \"color\": {\r\n
+    \           \"mode\": \"palette-classic\"\r\n          },\r\n          \"custom\":
+    {\r\n            \"axisLabel\": \"\",\r\n            \"axisPlacement\": \"auto\",\r\n
+    \           \"barAlignment\": 0,\r\n            \"drawStyle\": \"line\",\r\n            \"fillOpacity\":
+    10,\r\n            \"gradientMode\": \"none\",\r\n            \"hideFrom\": {\r\n
+    \             \"tooltip\": false,\r\n              \"viz\": false,\r\n              \"legend\":
+    false\r\n            },\r\n            \"lineInterpolation\": \"linear\",\r\n
+    \           \"lineWidth\": 1,\r\n            \"pointSize\": 5,\r\n            \"scaleDistribution\":
+    {\r\n              \"type\": \"linear\"\r\n            },\r\n            \"showPoints\":
+    \"never\",\r\n            \"spanNulls\": true\r\n          },\r\n          \"mappings\":
+    [],\r\n          \"thresholds\": {\r\n            \"mode\": \"absolute\",\r\n
+    \           \"steps\": [\r\n              {\r\n                \"color\": \"green\",\r\n
+    \               \"value\": null\r\n              }\r\n            ]\r\n          },\r\n
+    \         \"unit\": \"Bps\"\r\n        },\r\n        \"overrides\": []\r\n      },\r\n
+    \     \"gridPos\": {\r\n        \"h\": 8,\r\n        \"w\": 12,\r\n        \"x\":
+    0,\r\n        \"y\": 28\r\n      },\r\n      \"id\": 20,\r\n      \"options\":
+    {\r\n        \"legend\": {\r\n          \"calcs\": [\"mean\"],\r\n          \"displayMode\":
+    \"table\",\r\n          \"placement\": \"bottom\"\r\n        },\r\n        \"tooltip\":
+    {\r\n          \"mode\": \"single\"\r\n        }\r\n      },\r\n      \"targets\":
+    [\r\n        {\r\n          \"expr\": \"rate(container_network_receive_bytes_total{name=~\\\"fastapi|web|redis\\\"}[5m])\",\r\n
+    \         \"legendFormat\": \"RX - {{name}}\",\r\n          \"refId\": \"A\"\r\n
+    \       },\r\n        {\r\n          \"expr\": \"rate(container_network_transmit_bytes_total{name=~\\\"fastapi|web|redis\\\"}[5m])\",\r\n
+    \         \"legendFormat\": \"TX - {{name}}\",\r\n          \"refId\": \"B\"\r\n
+    \       }\r\n      ],\r\n      \"title\": \"Tráfico de Red por Contenedor\",\r\n
+    \     \"type\": \"timeseries\"\r\n    },\r\n    {\r\n      \"datasource\": \"Prometheus\",\r\n
+    \     \"fieldConfig\": {\r\n        \"defaults\": {\r\n          \"color\": {\r\n
+    \           \"mode\": \"palette-classic\"\r\n          },\r\n          \"custom\":
+    {\r\n            \"axisLabel\": \"\",\r\n            \"axisPlacement\": \"auto\",\r\n
+    \           \"barAlignment\": 0,\r\n            \"drawStyle\": \"line\",\r\n            \"fillOpacity\":
+    10,\r\n            \"gradientMode\": \"none\",\r\n            \"hideFrom\": {\r\n
+    \             \"tooltip\": false,\r\n              \"viz\": false,\r\n              \"legend\":
+    false\r\n            },\r\n            \"lineInterpolation\": \"linear\",\r\n
+    \           \"lineWidth\": 1,\r\n            \"pointSize\": 5,\r\n            \"scaleDistribution\":
+    {\r\n              \"type\": \"linear\"\r\n            },\r\n            \"showPoints\":
+    \"never\",\r\n            \"spanNulls\": true\r\n          },\r\n          \"mappings\":
+    [],\r\n          \"thresholds\": {\r\n            \"mode\": \"absolute\",\r\n
+    \           \"steps\": [\r\n              {\r\n                \"color\": \"green\",\r\n
+    \               \"value\": null\r\n              }\r\n            ]\r\n          },\r\n
+    \         \"unit\": \"short\"\r\n        },\r\n        \"overrides\": []\r\n      },\r\n
+    \     \"gridPos\": {\r\n        \"h\": 8,\r\n        \"w\": 12,\r\n        \"x\":
+    12,\r\n        \"y\": 28\r\n      },\r\n      \"id\": 22,\r\n      \"options\":
+    {\r\n        \"legend\": {\r\n          \"calcs\": [\"lastNotNull\"],\r\n          \"displayMode\":
+    \"table\",\r\n          \"placement\": \"bottom\"\r\n        },\r\n        \"tooltip\":
+    {\r\n          \"mode\": \"single\"\r\n        }\r\n      },\r\n      \"targets\":
+    [\r\n        {\r\n          \"expr\": \"redis_connected_clients\",\r\n          \"legendFormat\":
+    \"Clientes Conectados\",\r\n          \"refId\": \"A\"\r\n        },\r\n        {\r\n
+    \         \"expr\": \"redis_db_keys{db=\\\"db0\\\"}\",\r\n          \"legendFormat\":
+    \"Número de Keys\",\r\n          \"refId\": \"B\"\r\n        }\r\n      ],\r\n
+    \     \"title\": \"Métricas de Redis\",\r\n      \"type\": \"timeseries\"\r\n
+    \   },\r\n    {\r\n      \"datasource\": \"Prometheus\",\r\n      \"fieldConfig\":
+    {\r\n        \"defaults\": {\r\n          \"color\": {\r\n            \"mode\":
+    \"palette-classic\"\r\n          },\r\n          \"custom\": {\r\n            \"axisLabel\":
+    \"\",\r\n            \"axisPlacement\": \"auto\",\r\n            \"barAlignment\":
+    0,\r\n            \"drawStyle\": \"line\",\r\n            \"fillOpacity\": 10,\r\n
+    \           \"gradientMode\": \"none\",\r\n            \"hideFrom\": {\r\n              \"tooltip\":
+    false,\r\n              \"viz\": false,\r\n              \"legend\": false\r\n
+    \           },\r\n            \"lineInterpolation\": \"linear\",\r\n            \"lineWidth\":
+    1,\r\n            \"pointSize\": 5,\r\n            \"scaleDistribution\": {\r\n
+    \             \"type\": \"linear\"\r\n            },\r\n            \"showPoints\":
+    \"never\",\r\n            \"spanNulls\": true\r\n          },\r\n          \"mappings\":
+    [],\r\n          \"thresholds\": {\r\n            \"mode\": \"absolute\",\r\n
+    \           \"steps\": [\r\n              {\r\n                \"color\": \"green\",\r\n
+    \               \"value\": null\r\n              }\r\n            ]\r\n          },\r\n
+    \         \"unit\": \"short\"\r\n        },\r\n        \"overrides\": []\r\n      },\r\n
+    \     \"gridPos\": {\r\n        \"h\": 8,\r\n        \"w\": 12,\r\n        \"x\":
+    0,\r\n        \"y\": 36\r\n      },\r\n      \"id\": 24,\r\n      \"options\":
+    {\r\n        \"legend\": {\r\n          \"calcs\": [\"lastNotNull\"],\r\n          \"displayMode\":
+    \"table\",\r\n          \"placement\": \"bottom\"\r\n        },\r\n        \"tooltip\":
+    {\r\n          \"mode\": \"single\"\r\n        }\r\n      },\r\n      \"targets\":
+    [\r\n        {\r\n          \"expr\": \"nginx_http_requests_total\",\r\n          \"legendFormat\":
+    \"Total Requests\",\r\n          \"refId\": \"A\"\r\n        },\r\n        {\r\n
+    \         \"expr\": \"nginx_connections_active\",\r\n          \"legendFormat\":
+    \"Active Connections\",\r\n          \"refId\": \"B\"\r\n        }\r\n      ],\r\n
+    \     \"title\": \"Métricas de Nginx (Web)\",\r\n      \"type\": \"timeseries\"\r\n
+    \   }\r\n  ],\r\n  \"schemaVersion\": 27,\r\n  \"style\": \"dark\",\r\n  \"tags\":
+    [\"todo-app\", \"prometheus\"],\r\n  \"templating\": {\r\n    \"list\": []\r\n
+    \ },\r\n  \"time\": {\r\n    \"from\": \"now-1h\",\r\n    \"to\": \"now\"\r\n
+    \ },\r\n  \"timepicker\": {},\r\n  \"timezone\": \"\",\r\n  \"title\": \"Todo
+    App - Métricas Completas\",\r\n  \"uid\": \"todo-app-metrics\",\r\n  \"version\":
+    0\r\n}\r\n"
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  name: grafana-dashboard-todo-app
+  namespace: default

@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(kubectl create configmap:*)",
+      "Bash(deploy/grafana-dashboard-configmap.yaml)",
+      "Bash(kubectl get:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

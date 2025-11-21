@@ -1,4 +1,5 @@
-const API_BASE_URL = "http://localhost:8080/api";
+// Usar ruta relativa para que funcione tanto en Docker Compose como en K3D
+const API_BASE_URL = "/api";
 
 if (!API_BASE_URL) {
     console.error("❌ No se definió API_URL en config.js");

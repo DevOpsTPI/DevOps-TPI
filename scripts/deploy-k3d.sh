@@ -56,7 +56,8 @@ if ! k3d cluster list | grep -q "$CLUSTER_NAME"; then
         --api-port 6550 \
         --port "80:80@loadbalancer" \
         --port "443:443@loadbalancer" \
-        --agents 1
+        --agents 1 \
+        --agents-memory 2g
 
     echo "✅ Cluster creado exitosamente"
 else

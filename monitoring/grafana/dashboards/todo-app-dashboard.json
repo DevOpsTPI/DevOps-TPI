@@ -506,8 +506,8 @@
       },
       "targets": [
         {
-          "expr": "100 * (1 - avg(rate(container_cpu_usage_seconds_total{name=~\"fastapi|web|redis\"}[5m])) by (name))",
-          "legendFormat": "CPU Idle - {{name}}",
+          "expr": "rate(container_cpu_usage_seconds_total{pod=~\"api-.*|web-.*|redis-.*\", container!=\"\", container!=\"POD\"}[5m]) * 100",
+          "legendFormat": "{{pod}} - {{container}}",
           "refId": "A"
         }
       ],
@@ -575,8 +575,8 @@
       },
       "targets": [
         {
-          "expr": "container_memory_usage_bytes{name=~\"fastapi|web|redis\"}",
-          "legendFormat": "Memoria - {{name}}",
+          "expr": "container_memory_usage_bytes{pod=~\"api-.*|web-.*|redis-.*\", container!=\"\", container!=\"POD\"}",
+          "legendFormat": "{{pod}} - {{container}}",
           "refId": "A"
         }
       ],
@@ -644,13 +644,13 @@
       },
       "targets": [
         {
-          "expr": "rate(container_network_receive_bytes_total{name=~\"fastapi|web|redis\"}[5m])",
-          "legendFormat": "RX - {{name}}",
+          "expr": "rate(container_network_receive_bytes_total{pod=~\"api-.*|web-.*|redis-.*\", container!=\"\", container!=\"POD\"}[5m])",
+          "legendFormat": "RX - {{pod}}",
           "refId": "A"
         },
         {
-          "expr": "rate(container_network_transmit_bytes_total{name=~\"fastapi|web|redis\"}[5m])",
-          "legendFormat": "TX - {{name}}",
+          "expr": "rate(container_network_transmit_bytes_total{pod=~\"api-.*|web-.*|redis-.*\", container!=\"\", container!=\"POD\"}[5m])",
+          "legendFormat": "TX - {{pod}}",
           "refId": "B"
         }
       ],

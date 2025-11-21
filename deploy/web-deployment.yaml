@@ -12,8 +12,6 @@ spec:
       labels:
         app: web
     spec:
-      nodeSelector:
-        kubernetes.io/hostname: k3d-mi-cluster-agent-0  # podés quitarlo para distribuir pods
       containers:
         - name: web
           image: web:latest

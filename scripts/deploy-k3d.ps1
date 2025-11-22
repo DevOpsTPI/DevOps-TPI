@@ -89,18 +89,35 @@ Write-Host ""
 
 # Crear cluster si no existe
 if (-not $clusterExists) {
-    Write-Host "[4/10] Creando cluster K3D '$CLUSTER_NAME'..." -ForegroundColor Yellow
+    Write-Host "[4/10] Creando cluster K3D '$CLUSTER_NAME' con 3 nodos..." -ForegroundColor Yellow
+    Write-Host "   - Nodo maestro (server-0): 512 MB RAM, 1 CPU - Control Plane" -ForegroundColor Gray
+    Write-Host "   - Nodo agente 0 (agent-0): 1024 MB RAM, 1 CPU - Aplicacion" -ForegroundColor Gray
+    Write-Host "   - Nodo agente 1 (agent-1): 1024 MB RAM, 1 CPU - Telemetria" -ForegroundColor Gray
 
     k3d cluster create $CLUSTER_NAME `
         --api-port 6550 `
         --port "80:80@loadbalancer" `
         --port "443:443@loadbalancer" `
-        --agents 1 `
-        --agents-memory 2g
+        --agents 2 `
+        --servers-memory 512m `
+        --agents-memory 1024m `
+        --k3s-arg "--kubelet-arg=cpu-manager-policy=none@server:*" `
+        --k3s-arg "--kubelet-arg=cpu-manager-policy=none@agent:*"
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host "[ERROR] Error al crear el cluster" -ForegroundColor Red
         exit 1
+    }
+
+    # Aplicar limites de CPU a nivel de contenedor Docker
+    Write-Host ""
+    Write-Host "Aplicando limites de CPU y RAM a los nodos..." -ForegroundColor Yellow
+    docker update --cpus="1.0" --memory="512m" "k3d-$CLUSTER_NAME-server-0" 2>&1 | Out-Null
+    docker update --cpus="1.0" --memory="1024m" "k3d-$CLUSTER_NAME-agent-0" 2>&1 | Out-Null
+    docker update --cpus="1.0" --memory="1024m" "k3d-$CLUSTER_NAME-agent-1" 2>&1 | Out-Null
+
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "[OK] Limites de recursos aplicados a todos los nodos" -ForegroundColor Green
     }
 
     Write-Host "[OK] Cluster creado exitosamente" -ForegroundColor Green
@@ -116,6 +133,38 @@ kubectl wait --for=condition=Ready nodes --all --timeout=60s 2>$null
 if ($LASTEXITCODE -ne 0) {
     Write-Host "[WARNING] Timeout esperando nodos. Continuando de todas formas..." -ForegroundColor Yellow
 }
+
+Write-Host ""
+Write-Host "================================================" -ForegroundColor Cyan
+Write-Host "[4.5/10] Configurando nodos (labels y taints)" -ForegroundColor Cyan
+Write-Host "================================================" -ForegroundColor Cyan
+Write-Host ""
+
+# Aplicar taint al nodo maestro
+Write-Host "Aplicando taint al nodo maestro (no scheduling de apps)..." -ForegroundColor Yellow
+kubectl taint nodes k3d-$CLUSTER_NAME-server-0 node-role.kubernetes.io/control-plane=true:NoSchedule --overwrite 2>$null
+
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "[OK] Taint aplicado al nodo maestro" -ForegroundColor Green
+}
+
+# Etiquetar nodos agentes
+Write-Host ""
+Write-Host "Etiquetando nodos agentes..." -ForegroundColor Yellow
+
+kubectl label nodes k3d-$CLUSTER_NAME-agent-0 node-type=application --overwrite 2>$null
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "[OK] Nodo agent-0 etiquetado como 'application'" -ForegroundColor Green
+}
+
+kubectl label nodes k3d-$CLUSTER_NAME-agent-1 node-type=monitoring --overwrite 2>$null
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "[OK] Nodo agent-1 etiquetado como 'monitoring'" -ForegroundColor Green
+}
+
+Write-Host ""
+Write-Host "Verificando configuracion de nodos:" -ForegroundColor Yellow
+kubectl get nodes -L node-type --show-labels=false
 
 Write-Host ""
 Write-Host "================================================" -ForegroundColor Cyan

@@ -18,6 +18,9 @@ spec:
         tier: monitoring
     spec:
       serviceAccountName: prometheus
+      # Asegurar que corre en nodo de telemetria
+      nodeSelector:
+        node-type: monitoring
       containers:
         - name: prometheus
           image: prom/prometheus:latest

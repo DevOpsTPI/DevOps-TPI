@@ -11,7 +11,11 @@ spec:
     metadata:
       labels:
         app: redis
+        tier: application
     spec:
+      # Asegurar que corre en nodo de aplicacion
+      nodeSelector:
+        node-type: application
       containers:
         - name: redis
           image: redis:latest

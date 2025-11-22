@@ -17,6 +17,9 @@ spec:
         app: redis-exporter
         tier: monitoring
     spec:
+      # Asegurar que corre en nodo de telemetria
+      nodeSelector:
+        node-type: monitoring
       containers:
         - name: redis-exporter
           image: oliver006/redis_exporter:latest
@@ -69,6 +72,9 @@ spec:
         app: nginx-exporter
         tier: monitoring
     spec:
+      # Asegurar que corre en nodo de telemetria
+      nodeSelector:
+        node-type: monitoring
       containers:
         - name: nginx-exporter
           image: nginx/nginx-prometheus-exporter:latest

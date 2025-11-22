@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: web
 spec:
-  replicas: 2   # 🔁 dos réplicas, balanceadas por Traefik
+  replicas: 1   # 1 replica en nodo agente
   selector:
     matchLabels:
       app: web
@@ -11,7 +11,11 @@ spec:
     metadata:
       labels:
         app: web
+        tier: application
     spec:
+      # Asegurar que corre en nodo de aplicacion
+      nodeSelector:
+        node-type: application
       containers:
         - name: web
           image: web:latest

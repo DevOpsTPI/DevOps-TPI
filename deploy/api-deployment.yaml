@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: api
 spec:
-  replicas: 2   # 🔁 para escalar horizontalmente
+  replicas: 1   # 1 replica en nodo agente
   selector:
     matchLabels:
       app: api
@@ -11,7 +11,11 @@ spec:
     metadata:
       labels:
         app: api
+        tier: application
     spec:
+      # Asegurar que corre en nodo de aplicacion
+      nodeSelector:
+        node-type: application
       containers:
         - name: api
           image: api:latest

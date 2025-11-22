@@ -5,8 +5,8 @@ __pycache__/
 .DS_Store
 
 com-redis.txt
-
-
+documentos/
+.claude/
 
 
 #Ignore vscode AI rules

@@ -1,0 +1,89 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+spec:
+  serviceName: redis
+  replicas: 2   # 1 master + 1 replica
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+        tier: database
+    spec:
+      # Permitir que corra en cualquiera de los 3 nodos worker
+      nodeSelector:
+        node-type: application
+      # Init container para configurar el pod
+      initContainers:
+        - name: init-redis
+          image: redis:7-alpine
+          command:
+            - sh
+            - -c
+            - |
+              set -ex
+              # Si es el pod 0 (master), usar configuracion master
+              if [ "$(echo $HOSTNAME | rev | cut -d- -f1 | rev)" = "0" ]; then
+                cp /mnt/config-map/master.conf /etc/redis/redis.conf
+                echo "Configurando como MASTER"
+              else
+                # Si no es el pod 0, configurar como replica
+                cp /mnt/config-map/replica.conf /etc/redis/redis.conf
+                echo "Configurando como REPLICA de redis-0"
+              fi
+          volumeMounts:
+            - name: config-map
+              mountPath: /mnt/config-map
+            - name: config
+              mountPath: /etc/redis
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          command:
+            - redis-server
+            - /etc/redis/redis.conf
+          ports:
+            - containerPort: 6379
+              name: redis
+          volumeMounts:
+            - name: config
+              mountPath: /etc/redis
+            - name: data
+              mountPath: /data
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "128Mi"
+            limits:
+              cpu: "100m"
+              memory: "256Mi"
+          livenessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - redis-cli
+                - ping
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: config-map
+          configMap:
+            name: redis-config
+        - name: config
+          emptyDir: {}
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 1Gi

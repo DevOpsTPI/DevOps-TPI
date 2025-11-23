@@ -3,9 +3,10 @@ kind: Service
 metadata:
   name: redis
 spec:
+  clusterIP: None   # Headless service para StatefulSet
   selector:
     app: redis
-  type: ClusterIP
   ports:
     - port: 6379
       targetPort: 6379
+      name: redis

@@ -3,7 +3,12 @@ kind: Deployment
 metadata:
   name: web
 spec:
-  replicas: 1   # 1 replica en nodo agente
+  replicas: 3   # 3 replicas distribuidas en 3 nodos worker
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1          # Solo 1 pod adicional durante el update
+      maxUnavailable: 0    # Mantener alta disponibilidad
   selector:
     matchLabels:
       app: web
@@ -16,9 +21,27 @@ spec:
       # Asegurar que corre en nodo de aplicacion
       nodeSelector:
         node-type: application
+      # Forzar que cada replica este en un nodo diferente
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - web
+              topologyKey: kubernetes.io/hostname
       containers:
         - name: web
           image: web:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
+          resources:
+            requests:
+              cpu: "25m"
+              memory: "32Mi"
+            limits:
+              cpu: "50m"
+              memory: "64Mi"

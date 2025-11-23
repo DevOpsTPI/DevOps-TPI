@@ -89,18 +89,19 @@ Write-Host ""
 
 # Crear cluster si no existe
 if (-not $clusterExists) {
-    Write-Host "[4/10] Creando cluster K3D '$CLUSTER_NAME' con 3 nodos..." -ForegroundColor Yellow
+    Write-Host "[4/10] Creando cluster K3D '$CLUSTER_NAME' con 4 nodos..." -ForegroundColor Yellow
     Write-Host "   - Nodo maestro (server-0): 512 MB RAM, 1 CPU - Control Plane" -ForegroundColor Gray
-    Write-Host "   - Nodo agente 0 (agent-0): 1024 MB RAM, 1 CPU - Aplicacion" -ForegroundColor Gray
-    Write-Host "   - Nodo agente 1 (agent-1): 1024 MB RAM, 1 CPU - Telemetria" -ForegroundColor Gray
+    Write-Host "   - Nodo agente 0 (agent-0): 512 MB RAM, 1 CPU - Aplicacion" -ForegroundColor Gray
+    Write-Host "   - Nodo agente 1 (agent-1): 512 MB RAM, 1 CPU - Aplicacion" -ForegroundColor Gray
+    Write-Host "   - Nodo agente 2 (agent-2): 512 MB RAM, 1 CPU - Aplicacion" -ForegroundColor Gray
 
     k3d cluster create $CLUSTER_NAME `
         --api-port 6550 `
         --port "80:80@loadbalancer" `
         --port "443:443@loadbalancer" `
-        --agents 2 `
+        --agents 3 `
         --servers-memory 512m `
-        --agents-memory 1024m `
+        --agents-memory 512m `
         --k3s-arg "--kubelet-arg=cpu-manager-policy=none@server:*" `
         --k3s-arg "--kubelet-arg=cpu-manager-policy=none@agent:*"
 
@@ -113,8 +114,9 @@ if (-not $clusterExists) {
     Write-Host ""
     Write-Host "Aplicando limites de CPU y RAM a los nodos..." -ForegroundColor Yellow
     docker update --cpus="1.0" --memory="512m" "k3d-$CLUSTER_NAME-server-0" 2>&1 | Out-Null
-    docker update --cpus="1.0" --memory="1024m" "k3d-$CLUSTER_NAME-agent-0" 2>&1 | Out-Null
-    docker update --cpus="1.0" --memory="1024m" "k3d-$CLUSTER_NAME-agent-1" 2>&1 | Out-Null
+    docker update --cpus="1.0" --memory="512m" "k3d-$CLUSTER_NAME-agent-0" 2>&1 | Out-Null
+    docker update --cpus="1.0" --memory="512m" "k3d-$CLUSTER_NAME-agent-1" 2>&1 | Out-Null
+    docker update --cpus="1.0" --memory="512m" "k3d-$CLUSTER_NAME-agent-2" 2>&1 | Out-Null
 
     if ($LASTEXITCODE -eq 0) {
         Write-Host "[OK] Limites de recursos aplicados a todos los nodos" -ForegroundColor Green
@@ -157,9 +159,14 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "[OK] Nodo agent-0 etiquetado como 'application'" -ForegroundColor Green
 }
 
-kubectl label nodes k3d-$CLUSTER_NAME-agent-1 node-type=monitoring --overwrite 2>$null
+kubectl label nodes k3d-$CLUSTER_NAME-agent-1 node-type=application --overwrite 2>$null
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "[OK] Nodo agent-1 etiquetado como 'monitoring'" -ForegroundColor Green
+    Write-Host "[OK] Nodo agent-1 etiquetado como 'application'" -ForegroundColor Green
+}
+
+kubectl label nodes k3d-$CLUSTER_NAME-agent-2 node-type=application --overwrite 2>$null
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "[OK] Nodo agent-2 etiquetado como 'application'" -ForegroundColor Green
 }
 
 Write-Host ""
@@ -220,11 +227,26 @@ if (-not (Test-Path ".\deploy")) {
     exit 1
 }
 
-# Desplegar Redis
+# Desplegar Redis primero (sin Sentinel)
 Write-Host ""
 Write-Host "Desplegando Redis..." -ForegroundColor Yellow
-kubectl apply -f .\deploy\redis-deployment.yaml
+kubectl apply -f .\deploy\redis-configmap.yaml
+kubectl apply -f .\deploy\redis-statefulset.yaml
 kubectl apply -f .\deploy\redis-service.yaml
+
+Write-Host ""
+Write-Host "Esperando a que Redis este listo..." -ForegroundColor Yellow
+kubectl wait --for=condition=Ready pods -l app=redis --timeout=120s 2>$null
+
+# Ahora desplegar Sentinel
+Write-Host ""
+Write-Host "Desplegando Redis Sentinel..." -ForegroundColor Yellow
+kubectl apply -f .\deploy\redis-sentinel-statefulset.yaml
+kubectl apply -f .\deploy\redis-sentinel-service.yaml
+
+Write-Host ""
+Write-Host "Esperando a que Sentinel este listo..." -ForegroundColor Yellow
+kubectl wait --for=condition=Ready pods -l app=redis-sentinel --timeout=120s 2>$null
 
 # Desplegar API
 Write-Host ""
@@ -256,64 +278,7 @@ Write-Host "[OK] Aplicacion desplegada exitosamente" -ForegroundColor Green
 
 Write-Host ""
 Write-Host "================================================" -ForegroundColor Cyan
-Write-Host "[7/10] Desplegando sistema de telemetria" -ForegroundColor Cyan
-Write-Host "================================================" -ForegroundColor Cyan
-
-# Desplegar RBAC de Prometheus
-Write-Host ""
-Write-Host "Desplegando RBAC de Prometheus..." -ForegroundColor Yellow
-kubectl apply -f .\deploy\prometheus-rbac.yaml
-
-# Desplegar ConfigMap de Prometheus
-Write-Host ""
-Write-Host "Desplegando configuracion de Prometheus..." -ForegroundColor Yellow
-kubectl apply -f .\deploy\prometheus-config.yaml
-
-# Desplegar Prometheus
-Write-Host ""
-Write-Host "Desplegando Prometheus..." -ForegroundColor Yellow
-kubectl apply -f .\deploy\prometheus-deployment.yaml
-
-# Desplegar Grafana
-Write-Host ""
-Write-Host "Desplegando Grafana..." -ForegroundColor Yellow
-kubectl apply -f .\deploy\grafana-deployment.yaml
-
-# Desplegar Exporters (version K3D sin cAdvisor standalone)
-Write-Host ""
-Write-Host "Desplegando exporters..." -ForegroundColor Yellow
-kubectl apply -f .\deploy\exporters-deployment-k3d.yaml
-
-# Desplegar Ingress de monitoreo
-Write-Host ""
-Write-Host "Desplegando Ingress de monitoreo..." -ForegroundColor Yellow
-kubectl apply -f .\deploy\monitoring-ingress.yaml
-
-Write-Host ""
-Write-Host "Esperando a que los pods de telemetria esten listos..." -ForegroundColor Yellow
-
-Start-Sleep -Seconds 5
-
-kubectl wait --for=condition=Ready pods -l app=prometheus --timeout=120s 2>$null
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "[WARNING] Prometheus aun no esta listo, continuando..." -ForegroundColor Yellow
-}
-
-kubectl wait --for=condition=Ready pods -l app=grafana --timeout=120s 2>$null
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "[WARNING] Grafana aun no esta listo, continuando..." -ForegroundColor Yellow
-}
-
-kubectl wait --for=condition=Ready pods -l tier=monitoring --timeout=120s 2>$null
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "[WARNING] Algunos exporters aun no estan listos, continuando..." -ForegroundColor Yellow
-}
-
-Write-Host "[OK] Sistema de telemetria desplegado" -ForegroundColor Green
-
-Write-Host ""
-Write-Host "================================================" -ForegroundColor Cyan
-Write-Host "[8/10] Despliegue completo" -ForegroundColor Cyan
+Write-Host "[7/10] Despliegue completo" -ForegroundColor Cyan
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -323,46 +288,12 @@ kubectl get pods
 
 Write-Host ""
 Write-Host "================================================" -ForegroundColor Cyan
-Write-Host "[9/10] URLs de acceso" -ForegroundColor Cyan
+Write-Host "[8/10] URLs de acceso" -ForegroundColor Cyan
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "  Aplicacion:" -ForegroundColor White
 Write-Host "    - Web:       http://localhost" -ForegroundColor Gray
 Write-Host "    - API:       http://localhost/api" -ForegroundColor Gray
-Write-Host ""
-Write-Host "  Telemetria (configura hosts primero):" -ForegroundColor White
-Write-Host "    - Grafana:   http://grafana.localhost (admin/admin)" -ForegroundColor Gray
-Write-Host "    - Prometheus: http://prometheus.localhost" -ForegroundColor Gray
-Write-Host ""
-Write-Host "  Alternativa con port-forward:" -ForegroundColor White
-Write-Host "    kubectl port-forward svc/grafana 3000:3000" -ForegroundColor Gray
-Write-Host "    kubectl port-forward svc/prometheus 9090:9090" -ForegroundColor Gray
-Write-Host ""
-
-Write-Host "================================================" -ForegroundColor Cyan
-Write-Host "[10/10] Configuracion del archivo hosts" -ForegroundColor Cyan
-Write-Host "================================================" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "Para acceder a Grafana y Prometheus por nombre, agrega estas lineas" -ForegroundColor Yellow
-Write-Host "al archivo hosts de Windows:" -ForegroundColor Yellow
-Write-Host ""
-Write-Host "127.0.0.1 grafana.localhost" -ForegroundColor White
-Write-Host "127.0.0.1 prometheus.localhost" -ForegroundColor White
-Write-Host ""
-Write-Host "Ubicacion del archivo:" -ForegroundColor Yellow
-Write-Host "  C:\Windows\System32\drivers\etc\hosts" -ForegroundColor Gray
-Write-Host ""
-Write-Host "Editalo como Administrador con:" -ForegroundColor Yellow
-Write-Host "  notepad C:\Windows\System32\drivers\etc\hosts" -ForegroundColor Gray
-Write-Host ""
-Write-Host "O ejecuta este comando como Administrador:" -ForegroundColor Yellow
-Write-Host ""
-$hostsCommand = @"
-Add-Content -Path C:\Windows\System32\drivers\etc\hosts -Value `"
-127.0.0.1 grafana.localhost
-127.0.0.1 prometheus.localhost`"
-"@
-Write-Host $hostsCommand -ForegroundColor Gray
 Write-Host ""
 
 Write-Host "================================================" -ForegroundColor Cyan
@@ -370,14 +301,9 @@ Write-Host "Despliegue completado exitosamente!" -ForegroundColor Cyan
 Write-Host "================================================" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Proximos pasos:" -ForegroundColor Yellow
-Write-Host "  1. Configurar archivo hosts (ver arriba)" -ForegroundColor White
-Write-Host "  2. Acceder a la aplicacion en http://localhost" -ForegroundColor White
-Write-Host "  3. Acceder a Grafana en http://grafana.localhost" -ForegroundColor White
-Write-Host "  4. Ejecutar script de verificacion:" -ForegroundColor White
-Write-Host "     .\scripts\verify-monitoring.ps1" -ForegroundColor Gray
+Write-Host "  1. Acceder a la aplicacion en http://localhost" -ForegroundColor White
+Write-Host "  2. Probar la API en http://localhost/api" -ForegroundColor White
 Write-Host ""
 Write-Host "Para mas informacion:" -ForegroundColor Yellow
 Write-Host "  - Guia de K3D: K3D-DEPLOYMENT.md" -ForegroundColor White
-Write-Host "  - Guia de telemetria: MONITORING.md" -ForegroundColor White
-Write-Host "  - Guia Windows: WINDOWS-GUIDE.md" -ForegroundColor White
 Write-Host ""

@@ -51,14 +51,31 @@ fi
 
 # Crear cluster si no existe
 if ! k3d cluster list | grep -q "$CLUSTER_NAME"; then
-    echo "🏗️  Creando cluster K3D '$CLUSTER_NAME'..."
+    echo "🏗️  Creando cluster K3D '$CLUSTER_NAME' con 4 nodos..."
+    echo "   - Nodo maestro (server-0): 512 MB RAM, 1 CPU - Control Plane"
+    echo "   - Nodo agente 0 (agent-0): 512 MB RAM, 1 CPU - Aplicacion"
+    echo "   - Nodo agente 1 (agent-1): 512 MB RAM, 1 CPU - Aplicacion"
+    echo "   - Nodo agente 2 (agent-2): 512 MB RAM, 1 CPU - Aplicacion"
+
     k3d cluster create $CLUSTER_NAME \
         --api-port 6550 \
         --port "80:80@loadbalancer" \
         --port "443:443@loadbalancer" \
-        --agents 1 \
-        --agents-memory 2g
+        --agents 3 \
+        --servers-memory 512m \
+        --agents-memory 512m \
+        --k3s-arg "--kubelet-arg=cpu-manager-policy=none@server:*" \
+        --k3s-arg "--kubelet-arg=cpu-manager-policy=none@agent:*"
 
+    # Aplicar limites de CPU a nivel de contenedor Docker
+    echo ""
+    echo "⚙️  Aplicando limites de CPU y RAM a los nodos..."
+    docker update --cpus="1.0" --memory="512m" "k3d-$CLUSTER_NAME-server-0"
+    docker update --cpus="1.0" --memory="512m" "k3d-$CLUSTER_NAME-agent-0"
+    docker update --cpus="1.0" --memory="512m" "k3d-$CLUSTER_NAME-agent-1"
+    docker update --cpus="1.0" --memory="512m" "k3d-$CLUSTER_NAME-agent-2"
+
+    echo "✅ Limites de recursos aplicados a todos los nodos"
     echo "✅ Cluster creado exitosamente"
 else
     echo "✅ Usando cluster existente"
@@ -67,6 +84,33 @@ fi
 echo ""
 echo "⏳ Esperando a que el cluster esté listo..."
 kubectl wait --for=condition=Ready nodes --all --timeout=60s
+
+echo ""
+echo "================================================"
+echo "🏷️  Configurando nodos (labels y taints)"
+echo "================================================"
+echo ""
+
+# Aplicar taint al nodo maestro
+echo "⚙️  Aplicando taint al nodo maestro (no scheduling de apps)..."
+kubectl taint nodes k3d-$CLUSTER_NAME-server-0 node-role.kubernetes.io/control-plane=true:NoSchedule --overwrite 2>/dev/null
+echo "✅ Taint aplicado al nodo maestro"
+
+# Etiquetar nodos agentes
+echo ""
+echo "🏷️  Etiquetando nodos agentes..."
+kubectl label nodes k3d-$CLUSTER_NAME-agent-0 node-type=application --overwrite 2>/dev/null
+echo "✅ Nodo agent-0 etiquetado como 'application'"
+
+kubectl label nodes k3d-$CLUSTER_NAME-agent-1 node-type=application --overwrite 2>/dev/null
+echo "✅ Nodo agent-1 etiquetado como 'application'"
+
+kubectl label nodes k3d-$CLUSTER_NAME-agent-2 node-type=application --overwrite 2>/dev/null
+echo "✅ Nodo agent-2 etiquetado como 'application'"
+
+echo ""
+echo "📋 Verificando configuración de nodos:"
+kubectl get nodes -L node-type --show-labels=false
 
 echo ""
 echo "================================================"
@@ -95,11 +139,26 @@ echo "================================================"
 echo "🚀 Desplegando aplicación"
 echo "================================================"
 
-# Desplegar Redis
+# Desplegar Redis primero (sin Sentinel)
 echo ""
 echo "📊 Desplegando Redis..."
-kubectl apply -f deploy/redis-deployment.yaml
+kubectl apply -f deploy/redis-configmap.yaml
+kubectl apply -f deploy/redis-statefulset.yaml
 kubectl apply -f deploy/redis-service.yaml
+
+echo ""
+echo "⏳ Esperando a que Redis esté listo..."
+kubectl wait --for=condition=Ready pods -l app=redis --timeout=120s
+
+# Ahora desplegar Sentinel
+echo ""
+echo "📊 Desplegando Redis Sentinel..."
+kubectl apply -f deploy/redis-sentinel-statefulset.yaml
+kubectl apply -f deploy/redis-sentinel-service.yaml
+
+echo ""
+echo "⏳ Esperando a que Sentinel esté listo..."
+kubectl wait --for=condition=Ready pods -l app=redis-sentinel --timeout=120s
 
 # Desplegar API
 echo ""
@@ -128,49 +187,6 @@ echo "✅ Aplicación desplegada exitosamente"
 
 echo ""
 echo "================================================"
-echo "📊 Desplegando sistema de telemetría"
-echo "================================================"
-
-# Desplegar RBAC de Prometheus
-echo ""
-echo "🔐 Desplegando RBAC de Prometheus..."
-kubectl apply -f deploy/prometheus-rbac.yaml
-
-# Desplegar ConfigMap de Prometheus
-echo ""
-echo "⚙️  Desplegando configuración de Prometheus..."
-kubectl apply -f deploy/prometheus-config.yaml
-
-# Desplegar Prometheus
-echo ""
-echo "📈 Desplegando Prometheus..."
-kubectl apply -f deploy/prometheus-deployment.yaml
-
-# Desplegar Grafana
-echo ""
-echo "📊 Desplegando Grafana..."
-kubectl apply -f deploy/grafana-deployment.yaml
-
-# Desplegar Exporters (versión K3D sin cAdvisor standalone)
-echo ""
-echo "🔌 Desplegando exporters..."
-kubectl apply -f deploy/exporters-deployment-k3d.yaml
-
-# Desplegar Ingress de monitoreo
-echo ""
-echo "🔀 Desplegando Ingress de monitoreo..."
-kubectl apply -f deploy/monitoring-ingress.yaml
-
-echo ""
-echo "⏳ Esperando a que los pods de telemetría estén listos..."
-kubectl wait --for=condition=Ready pods -l app=prometheus --timeout=120s 2>/dev/null || echo "⚠️  Prometheus aún no está listo, continuando..."
-kubectl wait --for=condition=Ready pods -l app=grafana --timeout=120s 2>/dev/null || echo "⚠️  Grafana aún no está listo, continuando..."
-kubectl wait --for=condition=Ready pods -l tier=monitoring --timeout=120s 2>/dev/null || echo "⚠️  Algunos exporters aún no están listos, continuando..."
-
-echo "✅ Sistema de telemetría desplegado"
-
-echo ""
-echo "================================================"
 echo "✅ Despliegue completo"
 echo "================================================"
 echo ""
@@ -186,43 +202,15 @@ echo "  Aplicación:"
 echo "    - Web:       http://localhost"
 echo "    - API:       http://localhost/api"
 echo ""
-echo "  Telemetría (configura /etc/hosts primero):"
-echo "    - Grafana:   http://grafana.localhost (admin/admin)"
-echo "    - Prometheus: http://prometheus.localhost"
-echo ""
-echo "  Alternativa con port-forward:"
-echo "    kubectl port-forward svc/grafana 3000:3000"
-echo "    kubectl port-forward svc/prometheus 9090:9090"
-echo ""
-
-echo "================================================"
-echo "🔧 Configuración de /etc/hosts"
-echo "================================================"
-echo ""
-echo "Agrega estas líneas a tu archivo /etc/hosts:"
-echo ""
-echo "127.0.0.1 grafana.localhost"
-echo "127.0.0.1 prometheus.localhost"
-echo ""
-echo "Linux/Mac:"
-echo "  sudo nano /etc/hosts"
-echo ""
-echo "Windows:"
-echo "  notepad C:\Windows\System32\drivers\etc\hosts"
-echo ""
 
 echo "================================================"
 echo "✨ ¡Despliegue completado!"
 echo "================================================"
 echo ""
 echo "📝 Próximos pasos:"
-echo "  1. Configurar /etc/hosts (ver arriba)"
-echo "  2. Acceder a la aplicación en http://localhost"
-echo "  3. Acceder a Grafana en http://grafana.localhost"
-echo "  4. Ejecutar script de verificación:"
-echo "     ./scripts/verify-monitoring.sh"
+echo "  1. Acceder a la aplicación en http://localhost"
+echo "  2. Probar la API en http://localhost/api"
 echo ""
 echo "📖 Para más información:"
 echo "  - Guía de K3D: K3D-DEPLOYMENT.md"
-echo "  - Guía de telemetría: MONITORING.md"
 echo ""

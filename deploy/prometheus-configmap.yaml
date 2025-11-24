@@ -1,0 +1,140 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: default
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 2s
+      evaluation_interval: 2s
+      external_labels:
+        cluster: 'k3d-todo-app'
+        environment: 'development'
+
+    scrape_configs:
+      # Scraping de la API (FastAPI con prometheus-client)
+      - job_name: 'api'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - default
+        relabel_configs:
+          # Solo pods con label app=api
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: api
+          # Usar el puerto 8000
+          - source_labels: [__meta_kubernetes_pod_ip]
+            action: replace
+            target_label: __address__
+            replacement: ${1}:8000
+          # Agregar labels útiles
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: pod
+          - source_labels: [__meta_kubernetes_pod_node_name]
+            action: replace
+            target_label: node
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: namespace
+        metrics_path: '/metrics'
+
+      # Scraping de Nginx exporters (sidecars en pods de web)
+      - job_name: 'nginx'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - default
+        relabel_configs:
+          # Solo pods con label app=web
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: web
+          # Usar el puerto 9113 (nginx-prometheus-exporter)
+          - source_labels: [__meta_kubernetes_pod_ip]
+            action: replace
+            target_label: __address__
+            replacement: ${1}:9113
+          # Agregar labels
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: pod
+          - source_labels: [__meta_kubernetes_pod_node_name]
+            action: replace
+            target_label: node
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: namespace
+
+      # Scraping de Redis exporters (sidecars en StatefulSet de redis)
+      - job_name: 'redis'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - default
+        relabel_configs:
+          # Solo pods con label app=redis
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: redis
+          # Usar el puerto 9121 (redis-exporter)
+          - source_labels: [__meta_kubernetes_pod_ip]
+            action: replace
+            target_label: __address__
+            replacement: ${1}:9121
+          # Agregar labels
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: pod
+          - source_labels: [__meta_kubernetes_pod_node_name]
+            action: replace
+            target_label: node
+          - source_labels: [__meta_kubernetes_namespace]
+            action: replace
+            target_label: namespace
+          # Identificar master vs replica
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: redis_role
+            regex: redis-0
+            replacement: master
+          - source_labels: [__meta_kubernetes_pod_name]
+            action: replace
+            target_label: redis_role
+            regex: redis-1
+            replacement: replica
+
+      # Scraping de kube-state-metrics (métricas de estado de pods, CPU, RAM)
+      - job_name: 'kube-state-metrics'
+        static_configs:
+          - targets: ['kube-state-metrics:8080']
+        metrics_path: '/metrics'
+
+      # Scraping de kubelet/cadvisor (métricas de CPU y RAM de containers)
+      - job_name: 'kubelet'
+        scheme: https
+        tls_config:
+          ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+          insecure_skip_verify: true
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+        kubernetes_sd_configs:
+          - role: node
+        relabel_configs:
+          - action: labelmap
+            regex: __meta_kubernetes_node_label_(.+)
+          - target_label: __address__
+            replacement: kubernetes.default.svc:443
+          - source_labels: [__meta_kubernetes_node_name]
+            regex: (.+)
+            target_label: __metrics_path__
+            replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+
+      # Scraping de Prometheus mismo (autoscraping)
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']

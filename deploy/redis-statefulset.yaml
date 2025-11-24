@@ -73,6 +73,21 @@ spec:
                 - ping
             initialDelaySeconds: 5
             periodSeconds: 5
+        - name: redis-exporter
+          image: oliver006/redis_exporter:v1.55.0-alpine
+          args:
+            - '--redis.addr=localhost:6379'
+          ports:
+            - containerPort: 9121
+              name: metrics
+              protocol: TCP
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "16Mi"
+            limits:
+              cpu: "25m"
+              memory: "32Mi"
       volumes:
         - name: config-map
           configMap:

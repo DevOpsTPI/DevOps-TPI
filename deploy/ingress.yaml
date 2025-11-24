@@ -8,6 +8,16 @@ spec:
     prefixes:
       - /api
 ---
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: strip-prometheus-prefix
+  namespace: default
+spec:
+  stripPrefix:
+    prefixes:
+      - /prometheus
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -21,6 +31,13 @@ spec:
   - host: localhost
     http:
       paths:
+      - path: /grafana
+        pathType: Prefix
+        backend:
+          service:
+            name: grafana
+            port:
+              number: 3000
       - path: /api
         pathType: Prefix
         backend:
@@ -35,3 +52,24 @@ spec:
             name: web
             port:
               number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: monitoring-ingress
+  namespace: default
+  annotations:
+    traefik.ingress.kubernetes.io/router.middlewares: default-strip-prometheus-prefix@kubernetescrd
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: localhost
+    http:
+      paths:
+      - path: /prometheus
+        pathType: Prefix
+        backend:
+          service:
+            name: prometheus
+            port:
+              number: 9090

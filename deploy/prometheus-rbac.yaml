@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: prometheus
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: prometheus
+rules:
+  # Permisos para descubrir pods, services, endpoints
+  - apiGroups: [""]
+    resources:
+      - nodes
+      - nodes/metrics
+      - services
+      - endpoints
+      - pods
+    verbs: ["get", "list", "watch"]
+  # Permisos para leer ConfigMaps
+  - apiGroups: [""]
+    resources:
+      - configmaps
+    verbs: ["get"]
+  # Permisos para acceder a métricas de nodos
+  - apiGroups: [""]
+    resources:
+      - nodes/proxy
+    verbs: ["get"]
+  # Permisos para service discovery
+  - nonResourceURLs:
+      - /metrics
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: prometheus
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: prometheus
+subjects:
+  - kind: ServiceAccount
+    name: prometheus
+    namespace: default

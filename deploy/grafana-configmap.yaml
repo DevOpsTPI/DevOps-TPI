@@ -224,7 +224,7 @@ data:
           "pluginVersion": "10.2.2",
           "targets": [
             {
-              "expr": "kube_pod_container_status_ready{namespace=\"default\",pod=~\"web-.*\",container=\"web\"}",
+              "expr": "max(kube_pod_container_status_ready{namespace=\"default\",pod=~\"web-.*\",container=\"web\"}) by (pod)",
               "legendFormat": "{{pod}}",
               "refId": "A"
             }
@@ -290,7 +290,7 @@ data:
           "pluginVersion": "10.2.2",
           "targets": [
             {
-              "expr": "kube_pod_container_status_ready{namespace=\"default\",pod=~\"redis-.*\",container=\"redis\"}",
+              "expr": "max(kube_pod_container_status_ready{namespace=\"default\",pod=~\"redis-[0-9]+\",container=\"redis\"}) by (pod)",
               "legendFormat": "{{pod}}",
               "refId": "A"
             }
@@ -326,7 +326,7 @@ data:
                   "type": "linear"
                 },
                 "showPoints": "never",
-                "spanNulls": false,
+                "spanNulls": true,
                 "stacking": {
                   "group": "A",
                   "mode": "none"
@@ -407,7 +407,7 @@ data:
                   "type": "linear"
                 },
                 "showPoints": "never",
-                "spanNulls": false,
+                "spanNulls": true,
                 "stacking": {
                   "group": "A",
                   "mode": "none"
@@ -488,7 +488,7 @@ data:
                   "type": "linear"
                 },
                 "showPoints": "never",
-                "spanNulls": false,
+                "spanNulls": true,
                 "stacking": {
                   "group": "A",
                   "mode": "none"
@@ -569,7 +569,7 @@ data:
                   "type": "linear"
                 },
                 "showPoints": "never",
-                "spanNulls": false,
+                "spanNulls": true,
                 "stacking": {
                   "group": "A",
                   "mode": "none"
@@ -650,7 +650,7 @@ data:
                   "type": "linear"
                 },
                 "showPoints": "never",
-                "spanNulls": false,
+                "spanNulls": true,
                 "stacking": {
                   "group": "A",
                   "mode": "none"
@@ -731,7 +731,7 @@ data:
                   "type": "linear"
                 },
                 "showPoints": "never",
-                "spanNulls": false,
+                "spanNulls": true,
                 "stacking": {
                   "group": "A",
                   "mode": "none"
@@ -812,7 +812,7 @@ data:
                   "type": "linear"
                 },
                 "showPoints": "never",
-                "spanNulls": false,
+                "spanNulls": true,
                 "stacking": {
                   "group": "A",
                   "mode": "none"
@@ -857,8 +857,8 @@ data:
           "pluginVersion": "10.2.2",
           "targets": [
             {
-              "expr": "sum(rate(http_requests_total{job=\"api\"}[30s])) by (method, endpoint)",
-              "legendFormat": "{{method}} {{endpoint}}",
+              "expr": "sum(rate(http_requests_total{job=\"api\",endpoint!=\"/health\"}[1m])) by (method)",
+              "legendFormat": "{{method}}",
               "refId": "A"
             }
           ],

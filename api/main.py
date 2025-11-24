@@ -79,6 +79,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Función para normalizar endpoints y evitar alta cardinalidad en métricas
+def normalize_endpoint(path: str) -> str:
+    """
+    Normaliza paths dinámicos reemplazando UUIDs por {id} para reducir cardinalidad.
+    Ejemplos:
+        /tasks/abc-123-def -> /tasks/{id}
+        /tasks/abc-123-def/complete -> /tasks/{id}/complete
+    """
+    import re
+    # Reemplazar UUIDs (formato: 8-4-4-4-12 caracteres hexadecimales) por {id}
+    path = re.sub(r'/tasks/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}', '/tasks/{id}', path)
+    return path
+
 # Middleware para capturar métricas de peticiones HTTP
 @app.middleware("http")
 async def metrics_middleware(request: Request, call_next):
@@ -90,16 +103,19 @@ async def metrics_middleware(request: Request, call_next):
     response = await call_next(request)
     duration = time.time() - start_time
 
-    # Registrar métricas
+    # Normalizar endpoint para evitar alta cardinalidad
+    normalized_path = normalize_endpoint(request.url.path)
+
+    # Registrar métricas con endpoint normalizado
     http_requests_total.labels(
         method=request.method,
-        endpoint=request.url.path,
+        endpoint=normalized_path,
         status=response.status_code
     ).inc()
 
     http_request_duration_seconds.labels(
         method=request.method,
-        endpoint=request.url.path
+        endpoint=normalized_path
     ).observe(duration)
 
     return response

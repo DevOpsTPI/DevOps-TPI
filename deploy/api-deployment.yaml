@@ -32,6 +32,12 @@ spec:
                     values:
                       - api
               topologyKey: kubernetes.io/hostname
+
+      initContainers:
+        - name: delay-start
+          image: busybox
+          command: ["sh", "-c", "sleep 50"]
+
       containers:
         - name: api
           image: api:latest

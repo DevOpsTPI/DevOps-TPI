@@ -1,0 +1,7 @@
+ 
+ k3d cluster start todo-app
+ k3d cluster stop todo-app
+ kubectl delete pod <name-pod-api>
+ kubectl exec <name-pod-web> -- kill 1
+ .\scripts\dos-attack.ps1 -Duration 120 -Threads 50
+ .\scripts\dos-attack.ps1 -Duration 50 -Threads 20

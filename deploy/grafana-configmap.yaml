@@ -695,7 +695,7 @@ data:
           "pluginVersion": "10.2.2",
           "targets": [
             {
-              "expr": "container_memory_working_set_bytes{namespace=\"default\",container=\"redis\",pod=~\"redis-[0-9]+\"}",
+              "expr": "max(container_memory_working_set_bytes{namespace=\"default\",container=\"redis\",pod=~\"redis-[0-9]+\"}) by (pod)",
               "legendFormat": "Redis-{{pod}}",
               "refId": "A"
             }
@@ -776,7 +776,7 @@ data:
           "pluginVersion": "10.2.2",
           "targets": [
             {
-              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"default\",container=\"redis\",pod=~\"redis-[0-9]+\"}[30s])",
+              "expr": "max(rate(container_cpu_usage_seconds_total{namespace=\"default\",container=\"redis\",pod=~\"redis-[0-9]+\"}[30s])) by (pod)",
               "legendFormat": "Redis-{{pod}}",
               "refId": "A"
             }

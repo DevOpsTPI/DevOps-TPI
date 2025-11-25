@@ -614,7 +614,7 @@ data:
           "pluginVersion": "10.2.2",
           "targets": [
             {
-              "expr": "max(rate(container_cpu_usage_seconds_total{namespace=\"default\",container=\"web\",pod=~\"web-[0-9]+\"}[30s])) by (pod)",
+              "expr": "max(rate(container_cpu_usage_seconds_total{namespace=\"default\",container=\"web\",pod=~\"web-[0-9]+\"}[30s])) by (pod) * 100",
               "legendFormat": "{{pod}}",
               "refId": "A"
             }

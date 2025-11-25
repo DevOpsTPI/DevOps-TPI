@@ -372,7 +372,7 @@ data:
           "targets": [
             {
               "expr": "container_memory_working_set_bytes{namespace=\"default\",container=\"api\",pod!=\"\"}",
-              "legendFormat": "API-{{node}}",
+              "legendFormat": "{{pod}}",
               "refId": "A"
             }
           ],
@@ -453,7 +453,7 @@ data:
           "targets": [
             {
               "expr": "rate(container_cpu_usage_seconds_total{namespace=\"default\",container=\"api\",pod!=\"\"}[30s])",
-              "legendFormat": "API-{{node}}",
+              "legendFormat": "{{pod}}",
               "refId": "A"
             }
           ],
@@ -534,7 +534,7 @@ data:
           "targets": [
             {
               "expr": "container_memory_working_set_bytes{namespace=\"default\",container=\"web\",pod!=\"\"}",
-              "legendFormat": "Web-{{node}}",
+              "legendFormat": "{{pod}}",
               "refId": "A"
             }
           ],
@@ -615,7 +615,7 @@ data:
           "targets": [
             {
               "expr": "rate(container_cpu_usage_seconds_total{namespace=\"default\",container=\"web\",pod!=\"\"}[30s])",
-              "legendFormat": "Web-{{node}}",
+              "legendFormat": "{{pod}}",
               "refId": "A"
             }
           ],
@@ -695,7 +695,7 @@ data:
           "pluginVersion": "10.2.2",
           "targets": [
             {
-              "expr": "container_memory_working_set_bytes{namespace=\"default\",container=\"redis\",pod!=\"\"}",
+              "expr": "container_memory_working_set_bytes{namespace=\"default\",container=\"redis\",pod=~\"redis-[0-9]+\"}",
               "legendFormat": "Redis-{{pod}}",
               "refId": "A"
             }
@@ -776,7 +776,7 @@ data:
           "pluginVersion": "10.2.2",
           "targets": [
             {
-              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"default\",container=\"redis\",pod!=\"\"}[30s])",
+              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"default\",container=\"redis\",pod=~\"redis-[0-9]+\"}[30s])",
               "legendFormat": "Redis-{{pod}}",
               "refId": "A"
             }

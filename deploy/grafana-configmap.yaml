@@ -158,7 +158,7 @@ data:
           "pluginVersion": "10.2.2",
           "targets": [
             {
-              "expr": "kube_pod_container_status_ready{namespace=\"default\",pod=~\"api-.*\",container=\"api\"}",
+              "expr": "max(kube_pod_container_status_ready{namespace=\"default\",pod=~\"api-[0-9]+\",container=\"api\"}) by (pod)",
               "legendFormat": "{{pod}}",
               "refId": "A"
             }
@@ -371,7 +371,7 @@ data:
           "pluginVersion": "10.2.2",
           "targets": [
             {
-              "expr": "container_memory_working_set_bytes{namespace=\"default\",container=\"api\",pod!=\"\"}",
+              "expr": "max(container_memory_working_set_bytes{namespace=\"default\",container=\"api\",pod=~\"api-[0-9]+\"}) by (pod)",
               "legendFormat": "{{pod}}",
               "refId": "A"
             }
@@ -452,7 +452,7 @@ data:
           "pluginVersion": "10.2.2",
           "targets": [
             {
-              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"default\",container=\"api\",pod!=\"\"}[30s])",
+              "expr": "max(rate(container_cpu_usage_seconds_total{namespace=\"default\",container=\"api\",pod=~\"api-[0-9]+\"}[30s])) by (pod)",
               "legendFormat": "{{pod}}",
               "refId": "A"
             }
@@ -533,7 +533,7 @@ data:
           "pluginVersion": "10.2.2",
           "targets": [
             {
-              "expr": "container_memory_working_set_bytes{namespace=\"default\",container=\"web\",pod!=\"\"}",
+              "expr": "max(container_memory_working_set_bytes{namespace=\"default\",container=\"web\",pod=~\"web-[0-9]+\"}) by (pod)",
               "legendFormat": "{{pod}}",
               "refId": "A"
             }
@@ -614,7 +614,7 @@ data:
           "pluginVersion": "10.2.2",
           "targets": [
             {
-              "expr": "rate(container_cpu_usage_seconds_total{namespace=\"default\",container=\"web\",pod!=\"\"}[30s])",
+              "expr": "max(rate(container_cpu_usage_seconds_total{namespace=\"default\",container=\"web\",pod=~\"web-[0-9]+\"}[30s])) by (pod)",
               "legendFormat": "{{pod}}",
               "refId": "A"
             }

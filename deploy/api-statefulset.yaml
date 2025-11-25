@@ -51,7 +51,7 @@ spec:
 
       containers:
         - name: api
-          image: todo-api:metrics-fix
+          image: api:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8000
